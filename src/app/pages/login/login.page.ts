@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { switchMap } from 'rxjs';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -34,7 +35,9 @@ export class LoginPage implements OnInit {
 		private alertController: AlertController,
 		private authService: AuthService,
 		private userService : UserService,
-		private router: Router
+		private router: Router,
+		private toastService: ToastService
+		
 	) { }
 
 	ngOnInit( ) { }
@@ -44,15 +47,25 @@ export class LoginPage implements OnInit {
 		await loading.present();
 
 		const { email, password } = this.credentials.value;
-		const user = await (await this.authService.login(email, password));
 
-		await loading.dismiss();
+		
+		const user = await this.authService.login(email, password)
+		.then((userCredentials) => {
+			if (userCredentials) {
+				this.router.navigateByUrl('/home', { replaceUrl: true });
+			} else {
+	
+				this.showAlert('Login failed', 'Please try again!');
+			}
+		}).catch((error) => {
+			console.log(error.code);
+			
+			const errorMessage = this.authService.errorCode(error.code);
+			let options = {color: 'warning', cssClass: 'toast-top'};
+			this.toastService.showMessage(errorMessage,options);	
+		})
 
-		if (user) {
-			this.router.navigateByUrl('/home', { replaceUrl: true });
-		} else {
-			this.showAlert('Login failed', 'Please try again!');
-		}
+		await loading.dismiss();	
 	}
 
   	async showAlert(header : string, message : string) {
