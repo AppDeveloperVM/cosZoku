@@ -1,12 +1,12 @@
 export const environment = {
   firebase: {
-    projectId: 'template-auth-team',
-    appId: '1:311285034260:web:e4c4bf3dbbd09a67a5a601',
-    storageBucket: 'template-auth-team.appspot.com',
-    locationId: 'europe-west',
-    apiKey: 'AIzaSyCjB_gc_Q0X_cIeero1nyLEhLVRnwZNFCk',
-    authDomain: 'template-auth-team.firebaseapp.com',
-    messagingSenderId: '311285034260',
+    apiKey: "AIzaSyCxzHBZlvC_TwP-mGniQxDm2x2WRtVNc4g",
+    authDomain: "cos-zoku.firebaseapp.com",
+    projectId: "cos-zoku",
+    storageBucket: "cos-zoku.appspot.com",
+    messagingSenderId: "622741890388",
+    appId: "1:622741890388:web:5c09a743adc118388614c1",
+    measurementId: "G-2Q9P1MEDB9"
   },
   production: true
 };
