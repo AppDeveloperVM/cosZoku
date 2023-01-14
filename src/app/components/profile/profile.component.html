@@ -1,0 +1,15 @@
+<div *ngIf="user$ | async as user; else notLogged" >
+  <div class="card" >
+    <h1>{{user.email}}</h1>
+  <div class="card-body profile-image">
+    <p>text</p>
+  </div>
+
+  </div>
+</div>
+
+<ng-template #notLogged>
+  <p>Not logged In</p>  
+</ng-template>
+
+

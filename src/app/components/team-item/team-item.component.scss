@@ -1,0 +1,60 @@
+.team-item {
+    margin: 10px;
+    padding: 10px;
+    background-color: rgba($color: #1f6b97, $alpha: 1.0);
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    .header {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        .del-btn {
+            position: absolute;
+            right: 0px;
+        }
+    }
+
+    .team-members  {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        .member {
+            padding: 4px;
+            border:2px solid rgba(231, 226, 226, 0.628);
+            border-radius: 4px;
+            background-color: rgba($color: #1b63ab, $alpha: 1.0);
+            width: 50%;
+            
+        }
+    }
+}
+
+/* For Desktop View */
+@media screen and (min-width: 1024px) {
+    .member {
+        min-width: 25%;
+        min-height: 100px;
+        max-width: 20%;
+    }
+}
+
+/* For Tablet View */
+@media screen and (min-device-width: 768px)
+and (max-device-width: 1024px) {
+    .member {
+        min-width:  33%;
+        min-height: 100px;
+        max-width: 20%;
+    }
+}
+
+/* For Mobile Portrait View */
+@media screen and (max-device-width: 480px) {
+    .member {
+        min-width: 50%;
+        min-height: 100px;
+        max-width: 50%;
+    }
+}

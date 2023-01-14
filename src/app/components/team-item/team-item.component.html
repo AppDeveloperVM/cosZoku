@@ -1,0 +1,12 @@
+<div class="team-item">
+  <div class="header">
+    <h3>{{team.name}}</h3><div slot="end"><button class="del-btn btn btn-danger" (click)="deleteTeam(team.id)">X</button></div>
+  </div>
+  <app-member-form [team]="team"></app-member-form>
+  <div *ngIf="!isLoading">
+    <div class="team-members" >
+      <app-member class="member" *ngFor="let member of members$ | async" [member]="member" [team]="team"></app-member>
+    </div>
+  </div>
+  
+</div>

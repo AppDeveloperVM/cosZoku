@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <div slot="start">
+      <ion-title>Login Team App</ion-title>
+    </div>
+
+    <div slot="end">
+
+      <div *ngIf="user$ | async as user; else loginButton">
+        <div class="logout_btn">
+          <ion-button (click)="logout()" class="">Logout</ion-button>
+        </div>
+      </div>
+      
+      <ng-template #loginButton>
+        <div class="login_btn">
+          <ion-button (click)="loginRedirect()" >Login</ion-button>
+        </div>
+      </ng-template>
+
+    </div>
+</ion-toolbar>
+</ion-header>
