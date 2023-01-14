@@ -20,8 +20,10 @@ export class AuthService {
 
 	constructor(private auth: Auth) {
 		this.currentUser$.subscribe((user)=> {
-			this.userUid = user.uid;
-		})
+			if(user){
+				this.userUid = user.uid;
+			} 
+		});
 	}
 
 	get isLoggedIn() {
@@ -29,11 +31,11 @@ export class AuthService {
 	}
 
   	login( email : string, password : string ) {
-		return from(signInWithEmailAndPassword(this.auth, email, password));
+		return signInWithEmailAndPassword(this.auth, email, password);
 	}
 
 	register(name: string , email : string, password : string ) {
-		return from(createUserWithEmailAndPassword(this.auth, email, password));
+		return createUserWithEmailAndPassword(this.auth, email, password);
 	}
 
 	updateProfileData(profileData: Partial<UserInfo>) : Observable<any> {
@@ -55,6 +57,9 @@ export class AuthService {
 		var errorMessage = "Unexpected Error";
 
 		switch(errorCode) {
+		case 'auth/user-not-found' :
+			errorMessage = "User not found, try reentering your credendials";
+			break;
 		case 'auth/email-already-in-use':
 			errorMessage = 'Already exists an account with the given email address.';
 			break;
