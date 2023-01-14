@@ -1,9 +1,3 @@
-# template-auth-team
-Ionic Template - Auth with firebase
+# cosZoku
+Cosplay App for planning your costume, next conventions and photo sessions!
 
-To change Firebase project
-- Firebase login
-- Firebase list
-- Firebase init
-
-- ng add @angular/fire
