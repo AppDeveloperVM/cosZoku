@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { user } from '@angular/fire/auth';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { switchMap } from 'rxjs';
+import { ProfileUser } from 'src/app/models/user-profile';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -38,7 +41,8 @@ export class RegisterPage implements OnInit {
 		private alertController: AlertController,
 		private authService: AuthService,
 		private userService : UserService,
-		private router: Router ) { }
+		private router: Router,
+		private toastService: ToastService ) { }
 
   ngOnInit() {}
 
@@ -51,12 +55,23 @@ export class RegisterPage implements OnInit {
 		//displayName , email, password 
 		const { name, email, password } = this.credentials.value;
 
-		this.authService.register(name, email, password).pipe(
-			switchMap(({ user : { uid } }) => this.userService.addUser({ uid, email, displayName: email}) )
-		).subscribe(() => {
-			this.showAlert('Register succesfull', 'Reirecting to home..');
+		this.authService.register(name, email, password)
+		.then((userCredentials) => {
+			console.log(userCredentials.user);
+			const userData = userCredentials.user;
+			const userObj : ProfileUser = { uid: userData.uid, email : email, displayName: name};
+			this.userService.addUser(userObj);
+			const errorMessage = 'Register Succesful, redirecting to Home'
+			let options = {color: 'success', cssClass: 'toast-top'};
+			this.toastService.showMessage(errorMessage, options);
+
 			this.router.navigate(['home']);
-		});
+		}).catch((error) => {
+			console.log(error);
+			const errorMessage = this.authService.errorCode(error.code);
+			let options = {color: 'warning', cssClass: 'toast-top'};
+			this.toastService.showMessage(errorMessage, options);
+		})
 
 		await loading.dismiss();
 	}
