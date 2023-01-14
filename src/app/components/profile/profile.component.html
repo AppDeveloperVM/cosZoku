@@ -2,7 +2,7 @@
   <div class="card" >
     <h1>{{user.email}}</h1>
   <div class="card-body profile-image">
-    <p>text</p>
+    <p *ngIf="user.displayName">{{user.displayName}}</p>
   </div>
 
   </div>
