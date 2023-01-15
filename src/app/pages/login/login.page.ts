@@ -47,15 +47,19 @@ export class LoginPage implements OnInit {
 		await loading.present();
 
 		const { email, password } = this.credentials.value;
-
 		
-		const user = await this.authService.login(email, password)
+		await this.authService.login(email, password)
 		.then((userCredentials) => {
 			if (userCredentials) {
+				const errorMessage = 'Login Succesful, redirecting to Home'
+				let options = {color: 'success', cssClass: 'toast-top'};
+				this.toastService.showMessage(errorMessage, options);
+
 				this.router.navigateByUrl('/home', { replaceUrl: true });
 			} else {
-	
-				this.showAlert('Login failed', 'Please try again!');
+				const errorMessage = 'Login failed, please try again';
+				let options = {color: 'warning', cssClass: 'toast-top'};
+				this.toastService.showMessage(errorMessage,options);
 			}
 		}).catch((error) => {
 			console.log(error.code);
@@ -63,8 +67,7 @@ export class LoginPage implements OnInit {
 			const errorMessage = this.authService.errorCode(error.code);
 			let options = {color: 'warning', cssClass: 'toast-top'};
 			this.toastService.showMessage(errorMessage,options);	
-		})
-
+		});
 		await loading.dismiss();	
 	}
 
