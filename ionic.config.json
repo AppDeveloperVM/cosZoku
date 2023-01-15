@@ -1,5 +1,7 @@
 {
-  "name": "cos-zoku",
-  "integrations": {},
+  "name": "cosZoku",
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }
