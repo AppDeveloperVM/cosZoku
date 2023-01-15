@@ -19,16 +19,13 @@ export class TeamService {
   constructor(private readonly afs : AngularFirestore, private authService: AuthService, private Auth: Auth) {
     
     this.usersCollection = afs.collection<ProfileUser>('users');
-    console.log(this.userId);
     
     this.teamsCollection = this.usersCollection.doc(this.userId).collection<Team>('teams');
     this.getTeams( this.userId );
   }
 
   public getTeams(userId: String): void {
-    const collectionPath = "/users/"+ userId +"/teams";
-    console.log(collectionPath);
-    
+    const collectionPath = "/users/"+ userId +"/teams";    
     this.teams$ = this.teamsCollection?.snapshotChanges().pipe(
       map( actions => actions.map( a => a.payload.doc.data() as Team))
     )
@@ -59,7 +56,5 @@ export class TeamService {
       }
     })
   }
-
-  
 
 }

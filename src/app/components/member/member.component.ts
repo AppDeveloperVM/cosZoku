@@ -15,7 +15,6 @@ export class MemberComponent implements OnInit {
   ngOnInit() {}
 
   deleteMember(memberId : string){
-
     const teamId = this.team.id;
     this.memberService.deleteMember(teamId, memberId);
   }

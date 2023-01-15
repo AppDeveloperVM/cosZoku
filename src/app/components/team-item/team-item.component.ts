@@ -28,39 +28,25 @@ export class TeamItemComponent implements OnInit, OnChanges {
   ngOnInit() {
 	}
 
-	ngOnChanges(changes: SimpleChanges) {
-    console.log(changes['team'].currentValue);
-    
+	ngOnChanges(changes: SimpleChanges) {    
     if( changes['team'].currentValue != null ){
-      console.log(this.team.id);
-      
       this.getTeamMembers(this.team.id);
     }
-  
 	}
 
-  
-
   getTeamMembers(teamId : string) {
-
     this.isLoading = true;
 
     this.teamId = this.team.id;
     this.membersCollection = this.teamService.teamsCollection.doc(teamId).collection<Team>('members');
 
     const collectionPath = "/users/"+ this.Auth.currentUser.uid + "/teams/"+ teamId +"/members/";
-    console.log(collectionPath);
-    
-
     this.members$ = this.membersCollection?.valueChanges();
 
     this.members$?.subscribe(res => {
-      console.log(res);
       this.isLoading = false;
     })
   }
-
-
 
   deleteTeam(teamId: string){
     this.teamService.deleteTeam(teamId);

@@ -15,15 +15,12 @@ export class UserService {
 	get CurrentUserProfile$(): Observable<ProfileUser> {
 		return this.auth.currentUser$.pipe(
 			switchMap(user => {
-				console.log(user);
 				
 				if(!user?.uid){
 					return of(null);
 				}
 
-				const ref = doc(this.firestore, 'users', user?.uid)
-				console.log(ref);
-				
+				const ref = doc(this.firestore, 'users', user?.uid)				
 				return docData(ref) as Observable<ProfileUser>;
 			})
 		)
