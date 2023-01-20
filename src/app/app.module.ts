@@ -15,7 +15,10 @@ import { CommonModule } from '@angular/common';
 import { LoginPageModule } from './pages/login/login.module';
 import { UserService } from './services/user/user.service';
 import { TeamService } from './services/team/team.service';
+
 import { IonicStorageModule } from '@ionic/storage-angular';
+import { Drivers } from '@ionic/storage';
+import * as cordovaSQLiteDriver from 'localforage-cordovasqlitedriver';
 
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
 
@@ -30,7 +33,10 @@ import { FIREBASE_OPTIONS } from '@angular/fire/compat';
     HomePageModule,
     LoginPageModule,
     CommonModule,
-    IonicStorageModule.forRoot(),
+    IonicStorageModule.forRoot({
+      name: "coszaku",
+      driverOrder: [cordovaSQLiteDriver._driver, Drivers.IndexedDB, Drivers.LocalStorage]
+    }),
     provideFirebaseApp(() => initializeApp(environment.firebase)), 
     provideAuth(() => getAuth()), 
     provideFirestore(() => getFirestore())],
