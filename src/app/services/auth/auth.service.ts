@@ -10,27 +10,40 @@ import {
 	user
 } from '@angular/fire/auth';
 import { concat, concatMap, from, Observable, of, Subject, switchMap } from 'rxjs';
+import { LocalStorageService } from '../localStorage/local-storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 	currentUser$ = authState(this.auth);
+	currentUser : any;
 	userUid = null;
 
-	constructor(private auth: Auth) {
+	constructor(private auth: Auth, private localStorageService: LocalStorageService) {
+		if(this.localStorageService.getLocalItem('user')) {
+			this.userUid = this.localStorageService.getLocalItem('user').uid;
+			console.log(this.userUid);
+			
+		}
+
 		this.currentUser$.subscribe((user)=> {
+			console.log(user);
+			
 			if(user){
 				this.userUid = user.uid;
+				this.currentUser = user;
 			} 
 		});
 	}
 
-	get isLoggedIn() {
-		return this.auth.currentUser;
+	get isLoggedIn() : boolean {
+		const localDataExists = this.localStorageService.getLocalItem('user') ? true : null;
+		return localDataExists ? localDataExists : false;
 	}
 
   	login( email : string, password : string ) {
+		this.localStorageService.setLocalItem('user', this.currentUser);
 		return signInWithEmailAndPassword(this.auth, email, password);
 	}
 
@@ -50,7 +63,9 @@ export class AuthService {
 	}
 
   	logout() {
-		return from(signOut(this.auth));
+		signOut(this.auth).then(() => {
+			localStorage.removeItem('user');
+		});
 	}
 
 	errorCode(errorCode : string){
