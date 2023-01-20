@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { doc } from '@angular/fire/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Observable } from 'rxjs';
+import { Team } from 'src/app/models/team.interface';
 import { TeamService } from 'src/app/services/team/team.service';
 import { UserService } from 'src/app/services/user/user.service';
 import { AuthService } from '../../services/auth/auth.service';
@@ -12,7 +14,8 @@ import { AuthService } from '../../services/auth/auth.service';
 })
 export class HomePage {
   user$ = this.userService.CurrentUserProfile$;
-  teams$ = this.teamsService.teams$;
+  teamsCollection = this.teamsService.teamsCollection;
+  teams : any = [];
   isLoading = false;
 
   constructor(public authService: AuthService,
@@ -24,9 +27,10 @@ export class HomePage {
 
   ngOnInit(){
     this.isLoading = true;
-    this.teams$.subscribe((res)=> {
+    this.teamsCollection.valueChanges().subscribe((res)=> {
       setTimeout(() => {
         this.isLoading = false;
+        this.teams = res;
         console.log(res);
       }, 1000)
     })
