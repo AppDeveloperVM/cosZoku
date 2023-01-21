@@ -1,17 +1,12 @@
 <app-header></app-header>
-
-<ion-content [fullscreen]="true">
-
-  <div id="container" class="container">
-    <app-profile class="profile"></app-profile>
-
+<ion-content>
+  <ion-grid class="container">
     <app-team-form></app-team-form>
     <div class="teams_list mt-4" *ngIf="!isLoading">
       <app-team-item class="team" *ngFor="let team of teams"  [team]="team"></app-team-item>
     </div>
     <div class="mt-4" *ngIf="isLoading">
       <ion-spinner></ion-spinner>
-    </div>
-  </div>
-  
+    </div>  
+  </ion-grid>
 </ion-content>

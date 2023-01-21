@@ -1,7 +1,7 @@
-<ion-header>
-  <ion-toolbar color="dark">
+<ion-header class="bg-primary" >
+  <ion-toolbar class="toolbar">
     <div slot="start">
-      
+      <div *ngIf="user$ | async as user" class="user_name">{{user.displayName}}</div>
     </div>
 
     <div slot="end">
@@ -14,7 +14,7 @@
       
       <ng-template #loginButton>
         <div class="login_btn">
-          <ion-button (click)="loginRedirect()" >Login</ion-button>
+          <ion-button (click)="loginRedirect()">Login</ion-button>
         </div>
       </ng-template>
 

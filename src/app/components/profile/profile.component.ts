@@ -8,9 +8,9 @@ import { UserService } from 'src/app/services/user/user.service';
   styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit {
-  user$ = this.userSevice.CurrentUserProfile$;
+  user$ = this.userService.CurrentUserProfile$;
 
-  constructor(private authService : AuthService,private userSevice: UserService) {
+  constructor(private authService : AuthService,private userService: UserService) {
   }
 
   ngOnInit() {
