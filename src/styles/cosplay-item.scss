@@ -9,12 +9,12 @@ ion-item.cos-item.detailed{
     position: relative;
     
     .cosplay {
-        padding: 10px;
+        padding: 10px 0px 10px 0px;
         display: flex;
         flex-direction: row;
 
         .image ion-thumbnail {
-            --size: 70px;
+            --size: 60px;
             --border-radius: 14px;
         }
         .info {
