@@ -16,9 +16,6 @@
 
 @import "./styles/base.scss";
 
-
-
-
 body {
    height:100%;
    padding:0%;
@@ -28,3 +25,5 @@ body {
 .loading_spinner {
    margin: 10px;
 }
+
+@import "./styles/cosplay-item.scss";
