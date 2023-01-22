@@ -17,6 +17,7 @@ import { AuthService } from '../../services/auth/auth.service';
 })
 export class HomePage {
   user$ = this.userService.CurrentUserProfile$;
+  private userId = this.authService.userUid;
   teamsCollection = this.teamsService.teamsCollection;
   cosplaysCollection = this.cosService.cosplaysCollection;
   cosplays : any = [];
@@ -45,7 +46,7 @@ export class HomePage {
 
   //For testing purposes
   addCosTest() {
-    const cosplay = new Cosplay(null, new Date(),'Test','Description? nah',null,'OPM', 0, '0', false, null);
+    const cosplay = new Cosplay(null,'Test', 'Description? nah', 'OPM', null, new Date(), 0, '0', false, this.userId);
     this.cosService.saveCosplay(cosplay);
   }
 
