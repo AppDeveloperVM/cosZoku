@@ -21,6 +21,14 @@ const routes: Routes = [
   {
     path: 'register',
     loadChildren: () => import('./pages/register/register.module').then( m => m.RegisterPageModule)
+  },
+  {
+    path: 'cos-details/:id',
+    loadChildren: () => import('./pages/cosplays/cos-details/cos-details.module').then( m => m.CosDetailsPageModule)
+  },
+  {
+    path: 'new-cos',
+    loadChildren: () => import('./pages/cosplays/new-cos/new-cos.module').then( m => m.NewCosPageModule)
   }
 ];
 
