@@ -1,11 +1,18 @@
 <app-header [createNewRouteArray]="['/home']"></app-header>
+
 <ion-content>
   <ion-grid class="container">
-    <div class="teams_list" *ngIf="!isLoading">
-      <app-team-item class="team" *ngFor="let team of teams" [team]="team"></app-team-item>
+    <div class="col-12">
+      <div class="test_add_cos">
+        <ion-button (click)="addCosTest()">Add Cos Test</ion-button>
+      </div>
+
+      <div class="cos_list row" *ngIf="!isLoading">
+        <app-cos-item class="cos" class="col-12 col-md-6" *ngFor="let cos of cosplays" [cosplay]="cos"></app-cos-item>
+      </div>
+      <div class="" *ngIf="isLoading">
+        <ion-spinner class="loading_spinner"></ion-spinner>
+      </div>
     </div>
-    <div class="mt-4" *ngIf="isLoading">
-      <ion-spinner></ion-spinner>
-    </div>  
   </ion-grid>
 </ion-content>

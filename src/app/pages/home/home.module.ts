@@ -14,6 +14,7 @@ import { TeamFormComponent } from 'src/app/components/team-form/team-form.compon
 import { TeamItemComponent } from 'src/app/components/team-item/team-item.component';
 import { MemberComponent } from 'src/app/components/member/member.component';
 import { MemberFormComponent } from 'src/app/components/member-form/member-form.component';
+import { CosItemComponent } from 'src/app/components/cos-item/cos-item.component';
 
 @NgModule({
   imports: [
@@ -23,7 +24,7 @@ import { MemberFormComponent } from 'src/app/components/member-form/member-form.
     IonicModule,
     HomePageRoutingModule,
   ],
-  declarations: [HomePage, ProfileComponent, HeaderComponent,TeamFormComponent,TeamItemComponent, MemberComponent, MemberFormComponent],
+  declarations: [HomePage, ProfileComponent, HeaderComponent,TeamFormComponent,TeamItemComponent,CosItemComponent, MemberComponent, MemberFormComponent],
   providers: [UserService, AuthService, TeamService]
 })
 export class HomePageModule {}
