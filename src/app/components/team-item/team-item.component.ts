@@ -15,7 +15,7 @@ import { TeamService } from 'src/app/services/team/team.service';
 })
 export class TeamItemComponent implements OnInit, OnChanges {
   @Input() team;
-  membersCollection : AngularFirestoreCollection<any>;;
+  membersCollection : AngularFirestoreCollection<any>;
   members : Subject<Member[]>;
   members$ : Observable<Member[]>;
   isLoading = false;
