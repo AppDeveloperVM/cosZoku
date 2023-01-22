@@ -27,14 +27,18 @@ export class CosplayService {
   }
 
   saveCosplay(cosplay: Cosplay, cosId: string = null): Promise<void> {
-    return new Promise( async(resolve,reject) => {
+    console.log(cosplay);
+    
+    return new Promise( async (resolve,reject) => {
       try {
-        const userId = this.userId;
         const id = cosId || this.afs.createId();
+        cosplay.id = id;
         const data = {id, ...cosplay}
-        const result = this.cosplaysCollection.doc(id).set(data);
+        const result = await this.cosplaysCollection.doc(id).set(data);
         resolve(result);
       } catch(error){
+        console.log(error);
+        
         reject(error.message)
       }
     });
