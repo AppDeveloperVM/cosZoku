@@ -26,7 +26,7 @@ export class CosplayService {
     )
   }
 
-  saveCosplay(cosplay: Cosplay, cosId: string): Promise<void> {
+  saveCosplay(cosplay: Cosplay, cosId: string = null): Promise<void> {
     return new Promise( async(resolve,reject) => {
       try {
         const userId = this.userId;
