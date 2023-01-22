@@ -19,6 +19,9 @@ export class CosItemComponent implements OnInit {
 
   ngOnInit() {}
 
+  deleteCos(cosId: string){
+    this.cosService.deleteCosplay(cosId);
+  }
   
 
 }
