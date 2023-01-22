@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { UserService } from 'src/app/services/user/user.service';
@@ -10,6 +10,7 @@ import { UserService } from 'src/app/services/user/user.service';
 })
 export class HeaderComponent implements OnInit {
   user$ = this.userService.CurrentUserProfile$;
+  @Input() createNewRouteArray : any;
 
   constructor(private authService : AuthService,private userService: UserService ,private router : Router) { }
 
