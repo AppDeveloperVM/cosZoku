@@ -1,7 +1,9 @@
-<app-header [createNewRouteArray]="['/home']"></app-header>
+<app-header></app-header>
 
 <ion-content>
-  <ion-grid class="container ">
+  <ion-grid class="container">
+    <ion-progress-bar type="indeterminate" *ngIf="actionInProgress"></ion-progress-bar>
+
     <div class="col-12">
       <div class="test_add_cos">
         <ion-button (click)="addCosTest()">Add Cos Test</ion-button>
@@ -23,6 +25,16 @@
       <div class="" *ngIf="isLoading">
         <ion-spinner class="loading_spinner"></ion-spinner>
       </div>
+
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button (click)="goToNewCos()">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+
     </div>
   </ion-grid>
+
+  
+
 </ion-content>

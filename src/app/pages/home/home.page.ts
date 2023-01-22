@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { doc } from '@angular/fire/firestore';
+import { Route, Router } from '@angular/router';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Observable } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
@@ -23,11 +24,13 @@ export class HomePage {
   cosplays : any = [];
   teams : any = [];
   isLoading = false;
+  actionInProgress = false;
 
   constructor(public authService: AuthService,
     private userService: UserService, 
     private teamsService: TeamService,
-    private cosService: CosplayService
+    private cosService: CosplayService,
+    private router: Router
     ) {
 
   }
@@ -46,8 +49,20 @@ export class HomePage {
 
   //For testing purposes
   addCosTest() {
+    this.actionInProgress = true;
     const cosplay = new Cosplay(null,'Test', 'Description? nah', 'OPM', null, new Date(), 0, '0', false, this.userId);
-    this.cosService.saveCosplay(cosplay);
+    this.cosService.saveCosplay(cosplay)
+    .then(() => {
+      
+      setTimeout(() => {
+        this.actionInProgress = false;
+      }, 1000);
+      
+    })
+  }
+
+  goToNewCos(){
+    this.router.navigate(['/new-cos'])
   }
 
 }
