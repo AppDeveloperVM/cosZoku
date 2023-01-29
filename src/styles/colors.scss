@@ -1,0 +1,43 @@
+:root {
+    --ion-color-item:  #216f9d;
+    --ion-color-button-add: rgb(34, 76, 166);
+    --ion-color-button-remove: rgb(189, 23, 23);
+    --ion-color-label: rgb(219, 225, 232);
+}
+
+
+.ion-color-item {
+    --ion-color-base: var(--ion-color-item);
+    --ion-color-base-rgb: var(--ion-color-item-rgb);
+    --ion-color-contrast: var(--ion-color-item-contrast);
+    --ion-color-contrast-rgb: var(--ion-color-item-contrast-rgb);
+    --ion-color-shade: var(--ion-color-item-shade);
+    --ion-color-tint: var(--ion-color-item-tint);
+}
+
+.ion-color-button-add {
+    --ion-color-base: var(--ion-color-button-add);
+    --ion-color-base-rgb: var(--ion-color-button-add-rgb);
+    --ion-color-contrast: var(--ion-color-button-add-contrast);
+    --ion-color-contrast-rgb: var(--ion-color-button-add-rgb);
+    --ion-color-shade: var(--ion-color-button-add-shade);
+    --ion-color-tint: var(--ion-color-button-add-tint);
+}
+
+.ion-color-button-remove {
+    --ion-color-base: var(--ion-color-button-remove);
+    --ion-color-base-rgb: var(--ion-color-button-remove-rgb);
+    --ion-color-contrast: var(--ion-color-button-remove-contrast);
+    --ion-color-contrast-rgb: var(--ion-color-button-remove-rgb);
+    --ion-color-shade: var(--ion-color-button-remove-shade);
+    --ion-color-tint: var(--ion-color-button-remove-tint);
+}
+
+.ion-color-label {
+    --ion-color-base: var(--ion-color-label);
+    --ion-color-base-rgb: var(--ion-color-label-rgb);
+    --ion-color-contrast: var(--ion-color-label-contrast);
+    --ion-color-contrast-rgb: var(--ion-color-label-contrast-rgb);
+    --ion-color-shade: var(--ion-color-label-shade);
+    --ion-color-tint: var(--ion-color-label-tint);
+}
