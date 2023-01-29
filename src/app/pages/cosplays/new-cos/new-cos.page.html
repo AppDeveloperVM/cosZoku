@@ -4,14 +4,41 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
+
+    <ion-buttons slot="end">
+      <ion-button class="btn" color="button-add" 
+      [disabled]="!newCosForm.valid || !isFormReady"
+      (click)="onSubmitCosplay()">
+        Done
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
-  <form>
+  <form [formGroup]="newCosForm">
+    <ion-grid>
+      <div size-sm="12" size-md="12" size-lg="8" offset-lg="2" size-xl="8" offset-xl="2">
+
+        <ion-item>
+          <ion-label color="label" position="floating">Personaje</ion-label>
+          <ion-input type="text" formControlName="characterName"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label color="label" position="floating">Series</ion-label>
+          <ion-input type="text" formControlName="series"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label color="label" position="floating">Descripción</ion-label>
+          <ion-textarea rows="3" formControlName="description"></ion-textarea>
+        </ion-item>
 
 
+      </div>
+    </ion-grid>
   </form>
 
 </ion-content>
