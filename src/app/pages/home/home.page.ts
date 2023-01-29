@@ -42,7 +42,6 @@ export class HomePage {
       setTimeout(() => {
         this.isLoading = false;
         this.cosplays = res;
-        console.log(res);
       }, 1000)
     })
   }
@@ -53,16 +52,18 @@ export class HomePage {
     const cosplay = new Cosplay(null,'Test', 'Description? nah', 'OPM', null, new Date(), 0, '0', false, this.userId);
     this.cosService.saveCosplay(cosplay)
     .then(() => {
-      
       setTimeout(() => {
         this.actionInProgress = false;
       }, 1000);
-      
     })
   }
 
   goToNewCos(){
-    this.router.navigate(['/new-cos'])
+    this.router.navigate(['/new-cos']);
+  }
+
+  goToCosDetails(cosId: string){
+    this.router.navigate(['/cos-details/'+ cosId]);
   }
 
 }

@@ -6,7 +6,7 @@
 
     <div class="col-12">
       <div class="test_add_cos">
-        <ion-button (click)="addCosTest()">Add Cos Test</ion-button>
+        <ion-button color="button-add" (click)="addCosTest()">Add Cos Test</ion-button>
       </div>
 
       <div class="cos_list" *ngIf="!isLoading">
@@ -15,9 +15,9 @@
         size-lg="6" offset-lg="3"
         size-xl="6" offset-xl="3"
         class="ion-text-center" >
-          <ion-list *ngFor="let cos of cosplays" class="ion-no-padding">
+          <ion-list lines="none" *ngFor="let cos of cosplays" class="ion-no-padding">
 
-            <app-cos-item class="cos" class="col-12 col-md-6 " [cosplay]="cos"></app-cos-item>
+            <app-cos-item (click)="goToCosDetails(cos.id)" class="cos" class="col-12 col-md-6 " [cosplay]="cos"></app-cos-item>
           
           </ion-list>
         </ion-col>
