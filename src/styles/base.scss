@@ -1,7 +1,35 @@
 ion-content  {
-    --background: rgb(225, 225, 225) !important;
- }
+    --background: rgb(112, 148, 209) !important;
+}
 
- .container {
+body {
+    height:100%;
+    padding:0%;
+    background-image: none;
+}
+ 
+.loading_spinner {
+    margin: 10px;
+}
+ 
+ion-list {
+    background-color: transparent!important;
+}
+ 
+ion-item  {
+    --ion-item-background: transparent!important;
+    --ion-background-color: transparent!important;
+}
+ 
+ion-col {
+    --background: transparent!important;
+}
+ 
+ion-fab {
+    margin-bottom: 30px;
+    margin-right: 10px;
+}
+
+.container {
     --background: transparent;
- }
+}
