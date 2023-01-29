@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/compat/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { map, Observable } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
 import { ProfileUser } from 'src/app/models/user-profile';
@@ -26,9 +27,12 @@ export class CosplayService {
     )
   }
 
-  saveCosplay(cosplay: Cosplay, cosId: string = null): Promise<void> {
-    console.log(cosplay);
-    
+  getCosplay(cosId: string) {
+    return this.cosplaysCollection.ref
+    .doc(cosId).get();
+  }
+
+  saveCosplay(cosplay: Cosplay, cosId: string = null): Promise<void> {    
     return new Promise( async (resolve,reject) => {
       try {
         const id = cosId || this.afs.createId();
@@ -38,7 +42,6 @@ export class CosplayService {
         resolve(result);
       } catch(error){
         console.log(error);
-        
         reject(error.message)
       }
     });
