@@ -43,7 +43,8 @@ export class AuthService {
 	}
 
   	login( email : string, password : string ) {
-		this.localStorageService.setLocalItem('user', this.currentUser);
+		const userObj = this.currentUser ? this.currentUser : null;
+		this.localStorageService.setLocalItem('user', userObj );
 		return signInWithEmailAndPassword(this.auth, email, password);
 	}
 
