@@ -4,28 +4,43 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button *ngIf="!isEditEnabled" (click)="enableEdit()" class="btn" color="button-add">
+        EDIT
+      </ion-button>
+      <ion-button *ngIf="isEditEnabled" [disabled]="!detailsForm.valid" (click)="saveChanges()" class="btn" color="button-add">
+        SAVE
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-grid class="container">
     <div size-sm="12" size-md="12" size-lg="6" offset-lg="3" size-xl="6" offset-xl="3">
+      
       <div *ngIf="!isLoading">
-        <ion-thumbnail class="thumbnail" >
-          <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
-          <img *ngIf="imageReady" alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
-        </ion-thumbnail>
+        <form [formGroup]="detailsForm">
+          <ion-thumbnail class="thumbnail" >
+            <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
+            <img *ngIf="imageReady" alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+          </ion-thumbnail>
 
-        <ion-list class="ion-no-padding">
-          <ion-item class="notclickable">
-            <ion-label color="label" position="stacked">Series</ion-label>
-            <ion-input readonly="true">{{cosplay.series}}</ion-input>
-          </ion-item>
-          <ion-item class="notclickable">
-            <ion-label color="label" position="stacked">Description</ion-label>
-            <ion-input readonly="true">{{cosplay.description}}</ion-input>
-          </ion-item>
-        </ion-list>
+          <ion-list class="ion-no-padding">
+            <ion-item [ngClass]="{'notclickable': !isEditEnabled }">
+              <ion-label color="label" position="stacked">Character Name</ion-label>
+              <ion-input formControlName="characterName" [readonly]="!isEditEnabled"></ion-input>
+            </ion-item>
+            <ion-item [ngClass]="{'notclickable': !isEditEnabled }">
+              <ion-label color="label" position="stacked">Series</ion-label>
+              <ion-input formControlName="series" [readonly]="!isEditEnabled"></ion-input>
+            </ion-item>
+            <ion-item [ngClass]="{'notclickable': !isEditEnabled }">
+              <ion-label color="label" position="stacked">Description</ion-label>
+              <ion-input formControlName="description" [readonly]="!isEditEnabled"></ion-input>
+            </ion-item>
+          </ion-list>
+        </form>
       </div>
 
       <div padding>
@@ -42,6 +57,7 @@
       <div *ngIf="isLoading">
         <ion-spinner></ion-spinner>
       </div>
+      
     </div>
   </ion-grid>
 </ion-content>
