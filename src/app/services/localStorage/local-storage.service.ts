@@ -12,6 +12,10 @@ export class LocalStorageService {
   }
 
   getLocalItem(itemName: string){
-    return JSON.parse(localStorage.getItem(itemName));
+    const localData = localStorage.getItem(itemName)
+    if(localData){
+      return JSON.parse(localData);
+    }
+    
   }
 }
