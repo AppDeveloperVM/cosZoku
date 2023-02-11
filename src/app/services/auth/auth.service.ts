@@ -23,8 +23,7 @@ export class AuthService {
 	constructor(private auth: Auth, private localStorageService: LocalStorageService) {
 		if(this.localStorageService.getLocalItem('user')) {
 			this.userUid = this.localStorageService.getLocalItem('user').uid;
-			console.log(this.userUid);
-			
+			console.log(this.userUid);	
 		}
 
 		this.currentUser$.subscribe((user)=> {
@@ -44,7 +43,6 @@ export class AuthService {
 
   	login( email : string, password : string ) {
 		const userObj = this.currentUser ? this.currentUser : null;
-		this.localStorageService.setLocalItem('user', userObj );
 		return signInWithEmailAndPassword(this.auth, email, password);
 	}
 
@@ -66,6 +64,7 @@ export class AuthService {
   	logout() {
 		signOut(this.auth).then(() => {
 			localStorage.removeItem('user');
+			localStorage.clear();
 		});
 	}
 
