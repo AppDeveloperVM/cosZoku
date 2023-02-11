@@ -1,5 +1,5 @@
-<ion-menu side="end" menuId="m1" contentId="principal">
-  <ion-header>
+<ion-menu side="start" menuId="m1" contentId="principal">
+  <ion-header class="bg-primary">
     <ion-toolbar>
       <ion-title>
         CosZaku
@@ -8,27 +8,18 @@
   </ion-header>
 
   <ion-content>
-    <ion-list *ngFor="let page of navigate; let last=last" lines="none">
+    <ion-list lines="none">
       <ion-menu-toggle menu="m1">
-        <ion-item [routerLink]="page.url">
-          <ion-icon [name]="page.icon" slot="start"></ion-icon>
-          <ion-label>{{page.title}} </ion-label>
-        </ion-item>
+        <div *ngFor="let page of navigate; let last = last">
 
-        <div *ngIf="last">
-          <ion-item *ngIf="user$ | async as user; else loginButton" (click)="logout()">
-            <ion-icon name="log-out-outline" slot="start"></ion-icon>
-            <ion-label>Logout</ion-label>
-          </ion-item>
-          
-          <ng-template #loginButton>
-            <ion-item class="login_btn" (click)="loginRedirect()">
-              <ion-icon name="log-in-outline" slot="start"></ion-icon>
-              <ion-label>Login</ion-label>
+          <div>
+            <ion-item [routerLink]="page.url">
+              <ion-icon [name]="page.icon" slot="start"></ion-icon>
+              <ion-label>{{page.title}} </ion-label>
             </ion-item>
-          </ng-template>
-        </div>
+          </div>
 
+        </div>
       </ion-menu-toggle>
     </ion-list>
   </ion-content>

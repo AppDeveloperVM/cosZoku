@@ -26,18 +26,14 @@ export class MenuComponent implements OnInit {
         title : "Home",
         url   : "/home",
         icon  : "home"
+      },
+      {
+        title : "Settings",
+        url : "/settings",
+        icon : "settings-outline"
       }
     ]
 
-  }
-
-  logout(){
-    this.authService.logout();
-    this.loginRedirect();
-  }
-
-  loginRedirect(){
-    this.router.navigate(['login']);
   }
 
 }

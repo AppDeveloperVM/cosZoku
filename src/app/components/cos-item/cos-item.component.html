@@ -6,7 +6,7 @@
     </ion-thumbnail>
   </div>
   <div class="info">
-    <h3>{{cosplay.characterName}}</h3> <div ><ion-button (click)="deleteCos(cosplay.id);$event.stopPropagation();" color="button-remove" class="delete_btn">X</ion-button></div>
+    <div class="character_name">{{cosplay.characterName}}</div> <div ><ion-button (click)="deleteCos(cosplay.id);$event.stopPropagation();" color="button-remove" class="delete_btn">X</ion-button></div>
     <div class="details">
       <p class="series" *ngIf="cosplay.series">{{cosplay.series}}</p>
     </div>

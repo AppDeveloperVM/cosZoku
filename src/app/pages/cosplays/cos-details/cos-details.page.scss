@@ -1,7 +1,23 @@
+#profile {
+    height: 100%!important;
+    background-color: rgb(57, 65, 100);
+    border-radius:6px;
+    margin-top: 5px;
+    padding-top: 10px;
+}
+
 ion-thumbnail {
     --size: 90px;
     margin: auto;
     img {
         border-radius: 4px;
     }
+}
+
+ion-item {
+    --background: transparent;
+}
+
+.no-border {
+    --border-color: transparent!important;
 }

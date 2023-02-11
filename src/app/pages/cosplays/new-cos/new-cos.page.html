@@ -21,20 +21,22 @@
     <ion-grid>
       <div size-sm="12" size-md="12" size-lg="8" offset-lg="2" size-xl="8" offset-xl="2">
 
-        <ion-item>
-          <ion-label color="label" position="floating">Personaje</ion-label>
+      <ion-list class="mt-2">
+        <ion-item class="mb-2" fill="outline">
+          <ion-label color="label" position="stacked">Personaje</ion-label>
           <ion-input type="text" formControlName="characterName"></ion-input>
         </ion-item>
 
-        <ion-item>
-          <ion-label color="label" position="floating">Series</ion-label>
+        <ion-item class="mb-2" fill="outline">
+          <ion-label color="label" position="stacked">Series</ion-label>
           <ion-input type="text" formControlName="series"></ion-input>
         </ion-item>
 
-        <ion-item>
-          <ion-label color="label" position="floating">Descripción</ion-label>
+        <ion-item class="mb-2" fill="outline">
+          <ion-label color="label" position="stacked">Descripción</ion-label>
           <ion-textarea rows="3" formControlName="description"></ion-textarea>
         </ion-item>
+      </ion-list>
 
 
       </div>
