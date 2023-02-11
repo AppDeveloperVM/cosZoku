@@ -1,0 +1,36 @@
+h1 {
+    margin-bottom: 20px;
+}
+
+ion-fab {
+    margin-bottom: 100px;
+    margin-right: 10px;
+}
+
+.loading_spinner {
+    margin: 10px;
+}
+
+.notclickable {
+    pointer-events: none;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none;
+}
+
+.main-card {
+    background-color: rgb(57, 65, 100);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+
+
+// Forms
+.input-form-group {
+    height: 95px;
+    .error_message ion-note {
+        color: rgb(250, 142, 26)!important;
+    }
+}
+

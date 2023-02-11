@@ -1,0 +1,11 @@
+#login, #register {
+    background-color: rgb(39, 118, 196)!important;
+
+    label {
+        color: black;
+    }
+
+    .form-floating.item-has-focus {
+        --highlight-background: red;
+    }
+}

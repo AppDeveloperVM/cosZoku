@@ -1,22 +1,36 @@
-ion-content  {
-    --background: rgb(112, 148, 209) !important;
-}
-
+// Sizes
 body {
     height:100%;
     padding:0%;
     background-image: none;
 }
- 
-.loading_spinner {
-    margin: 10px;
+
+ion-toolbar, ion-menu {
+    --background: transparent!important;
+    --ion-background-color: transparent!important;
+    .header-text {
+        padding: 0 20px 0 20px;
+    }
+}
+
+ion-menu {
+    --background:inherit;
+}
+
+ion-content  {
+    --background: rgb(112, 148, 209) !important;
+}
+
+.container {
+    --background: transparent;
 }
  
 ion-list {
+    border-radius: 4px;
     background-color: transparent!important;
 }
  
-ion-item  {
+ion-item {
     --ion-item-background: transparent!important;
     --ion-background-color: transparent!important;
 }
@@ -24,12 +38,40 @@ ion-item  {
 ion-col {
     --background: transparent!important;
 }
- 
-ion-fab {
-    margin-bottom: 30px;
-    margin-right: 10px;
+
+// Colors
+input:autofill,
+
+input:-webkit-autofill,
+
+input:-webkit-autofill:hover,
+
+input:-webkit-autofill:focus
+
+input:-webkit-autofill,
+
+textarea:-webkit-autofill,
+
+textarea:-webkit-autofill:hover
+
+textarea:-webkit-autofill:focus,
+
+select:-webkit-autofill,
+
+select:-webkit-autofill:hover,
+
+select:-webkit-autofill:focus {
+
+  border:none !important;
+
+  -webkit-text-fill-color: black !important;
+
+  /* -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset; */
+
+  transition: background-color 5000s ease-in-out 0s;
+
+  font-size: 16px!important;
+
 }
 
-.container {
-    --background: transparent;
-}
+
