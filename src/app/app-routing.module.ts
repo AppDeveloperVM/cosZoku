@@ -29,6 +29,10 @@ const routes: Routes = [
   {
     path: 'new-cos',
     loadChildren: () => import('./pages/cosplays/new-cos/new-cos.module').then( m => m.NewCosPageModule)
+  },
+  {
+    path: 'settings',
+    loadChildren: () => import('./pages/settings/settings.module').then( m => m.SettingsPageModule)
   }
 ];
 
