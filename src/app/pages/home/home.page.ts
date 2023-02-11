@@ -21,10 +21,13 @@ export class HomePage {
   private userId = this.authService.userUid;
   teamsCollection = this.teamsService.teamsCollection;
   cosplaysCollection = this.cosService.cosplaysCollection;
-  cosplays : any = [];
+  cosplays : any = this.cosService.cosplays;
+  cosplays$ = this.cosService.cosplays$;
   teams : any = [];
   isLoading = false;
   actionInProgress = false;
+
+  // function to count time
 
   constructor(public authService: AuthService,
     private userService: UserService, 
@@ -38,12 +41,18 @@ export class HomePage {
   ngOnInit(){
     this.isLoading = true;
 
-    this.cosplaysCollection.valueChanges().subscribe((res)=> {
-      setTimeout(() => {
-        this.isLoading = false;
-        this.cosplays = res;
-      }, 1000)
+    this.cosService.getCosplaysByUser(this.userId)
+    .then((cosplays) => {
+      this.cosplays = cosplays;
+      this.isLoading = false;
     })
+    
+    // this.cosplaysCollection.valueChanges().subscribe((res)=> {
+    //   setTimeout(() => {
+    //     this.isLoading = false;
+    //     this.cosplays = res;
+    //   }, 1000)
+    // })
   }
 
   //For testing purposes
@@ -52,9 +61,15 @@ export class HomePage {
     const cosplay = new Cosplay(null,'Test', 'Description? nah', 'OPM', null, new Date(), 0, '0', false, this.userId);
     this.cosService.saveCosplay(cosplay)
     .then(() => {
-      setTimeout(() => {
-        this.actionInProgress = false;
-      }, 1000);
+      this.cosService.updateUserGroupsCosplays(this.userId)
+      .then((res) => {
+        console.log('updated user groups: ' + res);
+        
+        setTimeout(() => {
+          this.actionInProgress = false;
+        }, 100);
+      })
+      
     })
   }
 
