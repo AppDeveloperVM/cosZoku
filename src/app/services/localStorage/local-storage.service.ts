@@ -8,7 +8,7 @@ export class LocalStorageService {
   constructor() { }
 
   setLocalItem(name: string = '', dataObject: any){
-    localStorage.setItem('user', JSON.stringify(dataObject));
+    localStorage.setItem(name, JSON.stringify(dataObject));
   }
 
   getLocalItem(itemName: string){
