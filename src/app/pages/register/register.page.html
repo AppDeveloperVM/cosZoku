@@ -6,46 +6,46 @@
     <div class="container py-5 h-100">
       <div class="row d-flex justify-content-center align-items-center h-100">
         <div class="col-lg-8 col-xl-6">
-          <div class="card rounded-3">
+          <div id="register" class="card rounded-3">
   
             <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/img3.webp"
               class="w-100" style="border-top-left-radius: .3rem; border-top-right-radius: .3rem;"
               alt="Sample photo">
               
             <div class="card-body p-4 p-md-5">
-              <h3 class="mb-4 pb-2 pb-md-0 mb-md-5 px-md-2">Register</h3>
+              <h1 class="pb-2 pb-md-0 mb-md-5 px-md-2">Register</h1>
   
               <form class="px-md-2" [formGroup]="credentials">
 
-                <div class="mb-4 input-form-group">
+                <div class="input-form-group">
                   <div class="form-floating">
-                  <input type="name" id="formControlName" class="form-control form-control-lg" formControlName="name" />
-                  <label class="form-label" for="formControlName">Name</label>
+                    <input type="name" id="formControlName" class="form-control form-control-lg" formControlName="name" />
+                    <label class="form-label" for="formControlName">Name</label>
                   </div>
                   <div class="error_message">
-                  <ion-note slot="error" *ngIf="(name?.dirty || name?.touched) && name?.errors"
+                  <ion-note slot="error" *ngIf="( (name?.dirty || name?.touched) && name?.value) && name?.errors"
                    >Name needs to be at least 2 characters long</ion-note>
                   </div>
                 </div>
 
-                <div class="mb-4 input-form-group">
+                <div class="input-form-group">
                   <div class="form-floating">
-                  <input type="email" id="formControlEmail" class="form-control form-control-lg" formControlName="email" />
-                  <label class="form-label" for="formControlEmail">Email</label>
+                    <input type="email" id="formControlEmail" class="form-control form-control-lg" formControlName="email" />
+                    <label class="form-label" for="formControlEmail">Email</label>
                   </div>
                   <div class="error_message">
-                  <ion-note slot="error" *ngIf="(email?.dirty || email?.touched) && email?.errors"
+                  <ion-note slot="error" *ngIf="( (email?.dirty || email?.touched) && email?.value ) && email?.errors"
                    >Email is invalid</ion-note>
                   </div>
                 </div>
           
-                <div class="mb-4 input-form-group">
+                <div class="input-form-group">
                   <div class="form-floating">
                   <input type="text" class="form-control form-control-lg" id="formControlPass" formControlName="password" />
                   <label for="formControPass" class="form-label">Password</label>
                   </div>
                   <div class="error_message">
-                  <ion-note slot="error" *ngIf="(password?.dirty || password?.touched) && password?.errors"
+                  <ion-note slot="error" *ngIf="( (password?.dirty || password?.touched ) && password?.value ) && password?.errors"
                   >Password needs to be 6 characters long</ion-note>
                   </div>
                 </div>

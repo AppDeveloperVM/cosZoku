@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { switchMap } from 'rxjs';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { LocalStorageService } from 'src/app/services/localStorage/local-storage.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserService } from 'src/app/services/user/user.service';
 
@@ -34,6 +35,7 @@ export class LoginPage implements OnInit {
 		private loadingController: LoadingController,
 		private alertController: AlertController,
 		private authService: AuthService,
+		private localStorageService : LocalStorageService,
 		private userService : UserService,
 		private router: Router,
 		private toastService: ToastService
@@ -51,6 +53,9 @@ export class LoginPage implements OnInit {
 		await this.authService.login(email, password)
 		.then((userCredentials) => {
 			if (userCredentials) {
+				// Save user data locally
+				this.localStorageService.setLocalItem('user', userCredentials.user );
+
 				const errorMessage = 'Login Succesful, redirecting to Home'
 				let options = {color: 'success', cssClass: 'toast-top'};
 				this.toastService.showMessage(errorMessage, options);
