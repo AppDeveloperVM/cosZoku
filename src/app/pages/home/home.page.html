@@ -15,7 +15,8 @@
         size-lg="6" offset-lg="3"
         size-xl="6" offset-xl="3"
         class="ion-text-center">
-          <ion-list lines="none" *ngFor="let cos of cosplays" class="ion-no-padding items">
+          <ion-list lines="none" *ngFor=" let cos of cosplays$ | async" class="ion-no-padding items">
+             {{cos.name}}
 
             <app-cos-item (click)="goToCosDetails(cos.id)" class="cos" class="col-12" [cosplay]="cos"></app-cos-item>
           
