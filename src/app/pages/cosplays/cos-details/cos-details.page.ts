@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import { Cosplay } from 'src/app/models/cosplay.interface';
+import { AuthService } from 'src/app/services/auth/auth.service';
 import { CosplayService } from 'src/app/services/cosplay/cosplay.service';
 
 @Component({
@@ -10,13 +11,14 @@ import { CosplayService } from 'src/app/services/cosplay/cosplay.service';
   styleUrls: ['./cos-details.page.scss'],
 })
 export class CosDetailsPage implements OnInit {
+  private userId = this.authService.userUid;
   cosplay: Cosplay;
   isLoading = false;
   isEditEnabled = false;
   imageReady = false;
   detailsForm: FormGroup;
 
-  constructor(private route: ActivatedRoute, private cosService: CosplayService) { }
+  constructor(private authService: AuthService,private route: ActivatedRoute, private cosService: CosplayService) { }
 
   ngOnInit() {
     this.getCosplay().then(
@@ -35,8 +37,12 @@ export class CosDetailsPage implements OnInit {
 
   getCosplay() {
     this.isLoading = true;
-    const id = this.route.snapshot.paramMap.get('id');
-    return this.cosService.getCosplay(id)
+    if(this.userId){
+      const id = this.route.snapshot.paramMap.get('id');
+      return this.cosService.getCosplayById(id);
+    }
+    return null;
+    
   }
 
   initForm() {
