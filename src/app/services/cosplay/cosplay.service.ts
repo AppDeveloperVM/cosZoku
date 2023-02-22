@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/compat/firestore';
-import { collection, query, where } from 'firebase/firestore';
-import { map, Observable } from 'rxjs';
+import { FirebaseApp } from '@angular/fire/app';
+import { user } from '@angular/fire/auth';
+import { AngularFirestore, AngularFirestoreCollection, DocumentData, Query } from '@angular/fire/compat/firestore';
+import { CollectionReference, query } from 'firebase/firestore';
+import { BehaviorSubject, combineLatest, map, Observable, Subject, switchMap } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
 import { Group } from 'src/app/models/group.interface';
 import { ProfileUser } from 'src/app/models/user-profile';
@@ -12,42 +14,52 @@ import { UserService } from '../user/user.service';
   providedIn: 'root'
 })
 export class CosplayService {
-  cosplays$ : Observable<Cosplay[]>;
-  cosplays : any;
+  private userId = this.authService.userUid;
   cosplaysCollection : AngularFirestoreCollection<Cosplay>;
+  cosplays$ = new Observable<Cosplay[]>();
+
   groupsCollection : AngularFirestoreCollection<Group>;
   private usersCollection : AngularFirestoreCollection<any>;
-  private userId = this.authService.userUid;
+
+  
+  cosObsv : Observable<DocumentData[]>;
+  idFilter$: BehaviorSubject<string|null>;
+  userFilter$: BehaviorSubject<string|null>;
+
+  cosplays : any;
 
   constructor( private readonly afs : AngularFirestore, private authService: AuthService, private userService: UserService ) {
-    this.usersCollection = afs.collection<ProfileUser>('users');   
-    this.groupsCollection = afs.collection<Group>('groups'); 
-    if(this.userId !== null){
-      this.cosplaysCollection = this.groupsCollection.doc(this.userId).collection<Cosplay>('cosplays');
-      //this.getCosplays(  );
-      this.getCosplaysByUser(this.userId)
-      .then((res)=> {
-        this.cosplays = res;
-        console.log(res);
-      })
-    }
-    
-  }
 
-  public getCosplays(): void {
-    this.cosplays$ = this.cosplaysCollection?.snapshotChanges().pipe(
-      map( actions => actions.map( a => a.payload.doc.data() as Cosplay))
-    )
-  }
-
-  public getCosplaysByUser(userId: String) {
-    return new Promise<any>((resolve) => {
-      this.groupsCollection.doc(this.userId).collection('cosplays', ref => ref.where('user_uid', "==", userId))
-      .valueChanges().subscribe(cosplays => resolve(cosplays))
+    this.authService.currentUser$.subscribe((user)=> {
+      if( user ){
+        this.defineCollections(user.uid);
+      }
     })
+
   }
 
-  getCosplay(cosId: string) {
+  defineCollections(user_id : string) {
+    this.usersCollection = this.afs.collection<ProfileUser>('users');
+    this.groupsCollection = this.afs.collection<Group>('groups');
+    this.cosplaysCollection = this.groupsCollection.doc(user_id).collection<Cosplay>('cosplays');
+  }
+
+  getCosplaysByUser(user_uid: string) {
+
+    return this.afs
+    .collection('groups').doc(user_uid)
+    .collection('cosplays', (ref) => ref.where('user_uid', '==', user_uid))
+    .valueChanges({ idField: 'documentId' })
+
+  }
+
+  getCosplays(user_uid: string) {
+    return this.afs
+    .collection('groups').doc(user_uid)
+    .collection('cosplays').valueChanges();
+  }
+
+  getCosplayById(cosId: string) {
     return this.cosplaysCollection.ref
     .doc(cosId).get();
   }
@@ -57,9 +69,9 @@ export class CosplayService {
       try {
         const id = cosId || this.afs.createId();
         cosplay.id = id;
-        const data = {id, ...cosplay}
+        const data = {id, ...cosplay, user_uid : this.authService.userUid }
         const result = await this.cosplaysCollection.doc(id).set(data);
-        this.updateUserGroupsCosplays(this.userId);
+        //this.updateUserGroupsCosplays(this.userId);
         resolve(result);
       } catch(error){
         console.log(error);

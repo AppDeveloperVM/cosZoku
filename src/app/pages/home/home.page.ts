@@ -17,12 +17,11 @@ import { AuthService } from '../../services/auth/auth.service';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  user$ = this.userService.CurrentUserProfile$;
+  user$ = this.authService.currentUser$;
   private userId = this.authService.userUid;
-  teamsCollection = this.teamsService.teamsCollection;
   cosplaysCollection = this.cosService.cosplaysCollection;
   cosplays : any = this.cosService.cosplays;
-  cosplays$ = this.cosService.cosplays$;
+  cosplays$ : Observable<any[]>;
   teams : any = [];
   isLoading = false;
   actionInProgress = false;
@@ -30,8 +29,6 @@ export class HomePage {
   // function to count time
 
   constructor(public authService: AuthService,
-    private userService: UserService, 
-    private teamsService: TeamService,
     private cosService: CosplayService,
     private router: Router
     ) {
@@ -41,12 +38,14 @@ export class HomePage {
   ngOnInit(){
     this.isLoading = true;
 
-    this.cosService.getCosplaysByUser(this.userId)
-    .then((cosplays) => {
-      this.cosplays = cosplays;
-      this.isLoading = false;
-    })
-    
+    this.user$.subscribe((user)=> {
+
+      if(user.uid) {
+        this.cosplays$ = this.cosService.getCosplaysByUser(user.uid)
+        this.isLoading = false;
+      }
+    })  
+  
     // this.cosplaysCollection.valueChanges().subscribe((res)=> {
     //   setTimeout(() => {
     //     this.isLoading = false;
@@ -61,15 +60,15 @@ export class HomePage {
     const cosplay = new Cosplay(null,'Test', 'Description? nah', 'OPM', null, new Date(), 0, '0', false, this.userId);
     this.cosService.saveCosplay(cosplay)
     .then(() => {
-      this.cosService.updateUserGroupsCosplays(this.userId)
-      .then((res) => {
-        console.log('updated user groups: ' + res);
+      // this.cosService.updateUserGroupsCosplays(this.userId)
+      // .then((res) => {
+      //   console.log('updated user groups: ' + res);
         
-        setTimeout(() => {
-          this.actionInProgress = false;
-        }, 100);
-      })
-      
+      //   setTimeout(() => {
+      //     this.actionInProgress = false;
+      //   }, 100);
+      // })
+      this.actionInProgress = false;
     })
   }
 
