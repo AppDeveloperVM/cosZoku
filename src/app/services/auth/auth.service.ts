@@ -21,17 +21,13 @@ export class AuthService {
 	userUid = null;
 
 	constructor(private auth: Auth, private localStorageService: LocalStorageService) {
-		if(this.localStorageService.getLocalItem('user')) {
-			this.userUid = this.localStorageService.getLocalItem('user').uid;
-			console.log(this.userUid);	
-		}
-
-		this.currentUser$.subscribe((user)=> {
-			console.log(user);
-			
+		this.currentUser$.subscribe((user)=> {		
 			if(user){
 				this.userUid = user.uid;
 				this.currentUser = user;
+			}
+			if(this.localStorageService.getLocalItem('user')) {
+				this.userUid = this.localStorageService.getLocalItem('user').uid;
 			} 
 		});
 	}
@@ -64,7 +60,17 @@ export class AuthService {
   	logout() {
 		signOut(this.auth).then(() => {
 			localStorage.removeItem('user');
-			localStorage.clear();
+			//this.deleteLocalFirebaseDatabases();
+		});
+	}
+
+	deleteLocalFirebaseDatabases() {
+		window.indexedDB.databases().then((r) => {
+			for (var i = 0; i < r.length; i++){
+			  if( r[i].name.startsWith('firebase') ){
+				window.indexedDB.deleteDatabase(r[i].name);
+			  }
+			}
 		});
 	}
 
