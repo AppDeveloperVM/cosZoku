@@ -1,0 +1,52 @@
+<div class="picker">
+
+  <ion-button (click)="selectImage()" *ngIf="!myImage"
+  expand="full" color="primary" id="btn_overlay"
+    >Select image
+  </ion-button>
+
+  <image-cropper
+    id="cropper"
+    *ngIf="myImage != null"
+    #cropper
+    [imageBase64]="myImage"
+    [maintainAspectRatio]="true"
+    [aspectRatio]="aspectRatio"
+    format="jpeg"
+    [hideResizeSquares]="isMobile"
+    [transform]="transform"
+    [autoCrop]="false"
+    [roundCropper]="roundCropper"
+    (imageCropped)="imageCropped($event)"
+    (loadImageFailed)="loadImageFailed()"
+    (imageLoaded)="imageLoaded()"
+  ></image-cropper>
+ 
+  <img [src]="selectedImage" *ngIf="(selectedImage != null && selectedImage != '')" />
+
+</div>
+
+<ion-row *ngIf="myImage">
+  <ion-progress-bar type="indeterminate" *ngIf="isLoading"></ion-progress-bar>
+  <ion-col size="3" class="ion-text-center">
+    <ion-button fill="clear" (click)="rotate()">
+      <ion-icon name="refresh" slot="start"></ion-icon> Rotate
+    </ion-button>
+  </ion-col>
+  <ion-col size="2" class="ion-text-center">
+    <ion-button fill="clear" (click)="flipHorizontal()"> Flip X </ion-button>
+  </ion-col> 
+  <ion-col size="2" class="ion-text-center">
+    <ion-button fill="clear" (click)="flipVertical()"> Flip Y </ion-button>
+  </ion-col>
+  <ion-col size="2" class="ion-text-center" >
+    <ion-button  color="danger" (click)="discardChanges()">
+      <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+    </ion-button>
+  </ion-col >
+  <ion-col size="3">
+    <ion-button (click)="cropImage()" *ngIf="myImage">
+      <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+    </ion-button>
+  </ion-col>  
+</ion-row>
