@@ -15,6 +15,7 @@ import { CommonModule } from '@angular/common';
 import { LoginPageModule } from './pages/login/login.module';
 import { UserService } from './services/user/user.service';
 import { TeamService } from './services/team/team.service';
+import { SharedModule } from './shared/shared.module';
 
 import { IonicStorageModule } from '@ionic/storage-angular';
 import { Drivers } from '@ionic/storage';
@@ -34,6 +35,7 @@ import { MenuComponent } from './components/menu/menu.component';
     HomePageModule,
     LoginPageModule,
     CommonModule,
+    SharedModule,
     IonicStorageModule.forRoot({
       name: "coszaku",
       driverOrder: [cordovaSQLiteDriver._driver, Drivers.IndexedDB, Drivers.LocalStorage]
