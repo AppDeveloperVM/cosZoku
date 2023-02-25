@@ -20,6 +20,10 @@
     <div class="row">
     <div class="main-card col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-12">
       
+      <div *ngIf="isLoading">
+        <ion-progress-bar type="indeterminate"></ion-progress-bar>
+      </div>
+
       <div *ngIf="!isLoading">
         <form [formGroup]="detailsForm">
           <ion-thumbnail class="thumbnail" >
@@ -28,6 +32,14 @@
           </ion-thumbnail>
 
           <ion-list class="ion-no-padding mt-2" >
+            <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
+              <app-image-picker
+              [selectedImage]="imgSrc"
+              [showPreview]="detailsForm.get('imageUrl').value"
+              [aspectRatio]="1 / 1"
+              (imagePick)="onImagePicked($event)">
+            </app-image-picker>
+            </ion-item>
             <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
               <ion-label color="label" position="stacked">Character Name</ion-label>
               <ion-input formControlName="characterName" [readonly]="!isEditEnabled"></ion-input>
@@ -42,21 +54,17 @@
             </ion-item>
           </ion-list>
         </form>
-      </div>
 
-      <div padding>
-        <ion-segment color="label" >
-          <ion-segment-button  value="elements">
-            <ion-icon name="shirt-outline"></ion-icon>
-          </ion-segment-button>
-          <ion-segment-button value="tasks">
-            <ion-icon name="list-outline"></ion-icon>
-          </ion-segment-button>
-        </ion-segment>
-      </div>
-
-      <div *ngIf="isLoading">
-        <ion-spinner></ion-spinner>
+        <div padding>
+          <ion-segment color="label" >
+            <ion-segment-button  value="elements">
+              <ion-icon name="shirt-outline"></ion-icon>
+            </ion-segment-button>
+            <ion-segment-button value="tasks">
+              <ion-icon name="list-outline"></ion-icon>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
       </div>
 
     </div>

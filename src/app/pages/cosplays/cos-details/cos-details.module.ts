@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { CosDetailsPageRoutingModule } from './cos-details-routing.module';
 
 import { CosDetailsPage } from './cos-details.page';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
   imports: [
@@ -14,7 +15,8 @@ import { CosDetailsPage } from './cos-details.page';
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    CosDetailsPageRoutingModule
+    CosDetailsPageRoutingModule,
+    SharedModule
   ],
   declarations: [CosDetailsPage]
 })
