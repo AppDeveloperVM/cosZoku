@@ -9,6 +9,7 @@ import {
 	updateProfile,
 	user
 } from '@angular/fire/auth';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { concat, concatMap, from, Observable, of, Subject, switchMap } from 'rxjs';
 import { LocalStorageService } from '../localStorage/local-storage.service';
 
@@ -20,15 +21,28 @@ export class AuthService {
 	currentUser : any;
 	userUid = null;
 
-	constructor(private auth: Auth, private localStorageService: LocalStorageService) {
+	constructor(private afAuth: AngularFireAuth,private auth: Auth, private localStorageService: LocalStorageService) {
 		this.currentUser$.subscribe((user)=> {		
 			if(user){
+				console.log(user);
+				
 				this.userUid = user.uid;
 				this.currentUser = user;
 			}
 			if(this.localStorageService.getLocalItem('user')) {
 				this.userUid = this.localStorageService.getLocalItem('user').uid;
 			} 
+		});
+
+		this.afAuth.authState.subscribe((user) => {
+			if (user) {
+			  this.currentUser = user;
+			  localStorage.setItem('user', JSON.stringify(this.currentUser));
+			} else {
+				localStorage.setItem('user', null);
+				JSON.parse(localStorage.getItem('user'));
+			  	console.log('User is not logged in');
+			}
 		});
 	}
 
