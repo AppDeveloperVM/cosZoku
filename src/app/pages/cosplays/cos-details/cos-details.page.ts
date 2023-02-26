@@ -111,17 +111,16 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   assignImage(){
     this.imageName = this.cosplay.imageUrl;
     this.oldImgName = this.cosplay.imageUrl;
-
     var extraPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
-
     this.getImageByFbUrl(this.cosplay.imageUrl, 2, extraPath)
       .then((val)=>{
         this.imageReady = false;
-        console.log('img from Cosplay: ' + val);
+        console.log('img from Cosplay: ' + val + ', name: ' + this.imageName);
         
         this.imgSrc = val;
         this.imageReady = true;
         //Use saved info from db
+        //not saving correct one ..............
         if(this.detailsForm.get('imageUrl').value == null && this.cosplay.imageUrl != null){
           this.detailsForm.patchValue({ imageUrl: this.cosplay.imageUrl })
           this.imageReady = true;
@@ -148,16 +147,17 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       .then((val) =>{
         const name = val.split('_')[0];
         this.imageName = name;
-        console.log('imgName : ' + name);
-        console.log('Old imgName : ' + this.oldImgName);
-        this.getImageByFbUrl(this.imageName, 2, extraPath)
+        
+        console.log('Imagen Subida : ' + name);
+        this.getImageByFbUrl(name, 2, extraPath)
         .then( (res) => {
           this.imgSrc = res;
           this.imageChanged = true;
+          this.detailsForm.patchValue({ imageUrl: name }); // img updated in form
+          console.log('actualizado imgUrl: ' + name);
+          
           this.isFormReady = true;
-          console.log('imgSrc : ' + res);
-        } )
-        .catch();
+        }).catch();
 
         console.log("formReady, img src : "+ name );
       })
@@ -175,6 +175,8 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   saveChanges() {
     if (!this.detailsForm.valid) return;
 
+    var full_path = this.userId + '/' + this.firestorageService.getCosplayPath(this.cosplay.id, true);
+
     this.loadingCtrl
     .create({
       message: 'Updating Cosplay ...'
@@ -182,19 +184,26 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     .then(loadingEl => {
       loadingEl.present();
 
-      this.detailsForm.patchValue({ imageUrl: this.imageName }); // img updated in form
       const cosplay = this.detailsForm.value;      
       const cosplayId = this.cosplay?.id || null;
 
       this.cosService.saveCosplay(cosplay, cosplayId)
       .then((res)=> {
 
-        if(this.imageChanged && this.imageName !== this.oldImgName){
-          //this.storageService.deleteThumbnail(this.oldImgName);
+        console.log('saveCosplay');
+        
+        if(this.imageChanged && this.oldImgName != '') {
+          console.log('ImageToDelete : ' + this.oldImgName);
+          this.firestorageService.deleteThumbnail(this.oldImgName, full_path )
+          this.oldImgName = this.imageName;
         }
         this.dataUpdated = true;
 
-      });
+      })
+      .catch((err)=> {
+        console.log('cannot update cosplay: ' + err);
+        
+      })
 
       setTimeout(() => {
         loadingEl.dismiss();

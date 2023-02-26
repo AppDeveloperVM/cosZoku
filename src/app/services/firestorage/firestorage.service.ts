@@ -277,7 +277,9 @@ export class FirestorageService {
     
   }
 
-  deleteThumbnail(imgName) : Promise<any>{
+  deleteThumbnail(imgName, path : string = '') : Promise<any>{
+
+    const full_path = 'images/'+ path;
 
     const promise = new Promise( (resolve, reject) => {
 
@@ -287,9 +289,12 @@ export class FirestorageService {
 
         try {
           const name = imgName + '_' + size;
-          const ref = this.storage.storage.ref('/images').child(name).delete();
+          const ref = this.storage.storage.ref(full_path).child(name).delete();
 
           ref.then( (res) => {
+            
+            console.log('fullpath: ' + full_path + name + ', delete?: ' + res);
+            
             console.log('img deleted!');
             resolve(true);
           })

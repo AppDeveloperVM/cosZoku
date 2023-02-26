@@ -8,7 +8,7 @@
       <ion-button *ngIf="!isEditEnabled" (click)="enableEdit()" class="btn" color="button-add">
         EDIT
       </ion-button>
-      <ion-button *ngIf="isEditEnabled" [disabled]="!detailsForm.valid" (click)="saveChanges()" class="btn" color="button-add">
+      <ion-button *ngIf="isEditEnabled && isFormReady" [disabled]="!detailsForm.valid" (click)="saveChanges()" class="btn" color="button-add">
         SAVE
       </ion-button>
     </ion-buttons>
