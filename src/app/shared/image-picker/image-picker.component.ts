@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter, ViewChild, ElementRef, Input, getPlatform } from '@angular/core';
 import { Platform, LoadingController } from '@ionic/angular';
 import { Capacitor} from '@capacitor/core';
-import { Camera, CameraSource, CameraResultType } from '@capacitor/camera';
+import { Camera, CameraResultType } from '@capacitor/camera';
 import {
   ImageCroppedEvent,
   ImageCropperComponent,
@@ -22,26 +22,21 @@ export class ImagePickerComponent implements OnInit {
   @Input() roundCropper = false;
   @Input() aspectRatio = 4 / 3;
   imageReady = false;
-  //usePicker = false;
+  usePicker = false;
   isMobile = Capacitor.getPlatform() !== 'web';
+  isLoading = false;
 
   myImage: any = null;
   transform: ImageTransform = {};
 
   constructor(private platform: Platform, private loadingCtrl : LoadingController) { }
 
-  ngOnInit() {
-    console.log('------------------');
-    console.log('Mobile : ' + this.platform.is('mobile'));
-    console.log('Hybrid : ' + this.platform.is('hybrid'));
-    console.log('Android : ' + this.platform.is('android'));
-    console.log('Desktop : ' + this.platform.is('desktop'));
-    console.log('------------------');    
+  ngOnInit() {  
 
-    /* if ((this.platform.is('mobile') && !this.platform.is('hybrid')) ||
+     if ((this.platform.is('mobile') && !this.platform.is('hybrid')) ||
      this.platform.is('desktop') ) {
       this.usePicker = true;
-    } */
+    } 
   }
 
   /* onPickImage() {

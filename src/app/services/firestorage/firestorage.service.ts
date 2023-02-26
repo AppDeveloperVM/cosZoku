@@ -36,19 +36,24 @@ export class FirestorageService {
   constructor( private storage: AngularFireStorage, private alertCtrl: AlertController ) { }
 
   form: FormGroup;
-    imgReference;
-    public URLPublica = '';
-    isFormReady = false;
-    uploadPercent: Observable<number>;
-    ImageObs: Observable<string>;
-    urlImage: String;
+  imgReference;
+  public URLPublica = '';
+  isFormReady = false;
+  uploadPercent: Observable<number>;
+  ImageObs: Observable<string>;
+  urlImage: String;
 
-    //create Form component for the Image Upload
-    public archivoForm = new FormGroup({
-        archivo: new FormControl(null, Validators.required),
-    });
+  //create Form component for the Image Upload
+  public archivoForm = new FormGroup({
+      archivo: new FormControl(null, Validators.required),
+  });
 
-  async fullUploadProcess(imageData: string | File, form : FormGroup) : Promise<any> {
+  getCosplayPath(cosplayId: string, isMainPhoto: boolean = false) {
+    var extraPath = `cosplays/${ cosplayId }/${ (isMainPhoto ? 'main_photo/' : '') }`
+    return extraPath;
+  }
+
+  async fullUploadProcess(imageData: string | File, form : FormGroup, userId: string = '', extraPath: string = '') : Promise<any> {
 
     let upload = new Promise(async (resolve, reject) => { 
       await this.decodeFile(imageData)
@@ -68,7 +73,7 @@ export class FirestorageService {
             .then(
               async (val) => {
 
-                await this.uploadToServer(val,imageId +"_"+imgSize,form, index)
+                await this.uploadToServer(val, imageId +"_"+imgSize, form, index, userId, extraPath)
                 .then(
                   //Compressed and Uploaded Img to FireStorage
                   (val) => {
@@ -168,14 +173,15 @@ export class FirestorageService {
     return promise;
   }
 
-  uploadToServer(imageFile,imageId = Math.random().toString(36).substring(2) ,form : FormGroup, index : Number = null) : Promise<any> {
+  uploadToServer(imageFile, imageId = Math.random().toString(36).substring(2), form : FormGroup, index : Number = null, userId: string = '', extraPath: string = '') : Promise<any> {
 
     var promise = new Promise((resolve, reject) => {
     
       //UPLOAD IMAGE
+      console.log(userId + '/' + extraPath);
       
       const file = imageFile;
-      const filePath = `images/${imageId}`;// Image path + fileName  ||  can add profile_${id}
+      const filePath = `images/${ (userId!='' ? userId : '') + '/' +( extraPath!= '' ? extraPath : '' ) + imageId}`;// Image path + fileName  ||  can add profile_${id}
       const ref = this.storage.ref(filePath);
       const task = this.storage.upload(filePath, file);
       var imageUrl = "";
@@ -212,7 +218,7 @@ export class FirestorageService {
       return promise;
   }
 
-  async getStorageImgUrl(fileName: String, size : Number) : Promise<any> {
+  async getStorageImgUrl(fileName: String, size : Number, userId : string = '', extraPath: string = '') : Promise<any> {
 
     return new Promise((resolve, reject) => {
       
@@ -230,7 +236,7 @@ export class FirestorageService {
       }
       file = fileName + "_" + suffix;
 
-      const filePath = `images/${file}`;
+      const filePath = `images/${ (userId!='' ? userId + '/' : '') + extraPath + file }`;
       const ref = this.storage.ref(filePath);
 
       /* const storage = getStorage();
@@ -238,20 +244,18 @@ export class FirestorageService {
       getDownloadURL(storageRef)
       .then(url => {
       }) */
-
       var imageUrl = "";
-      //console.log(ref.getDownloadURL());
-      
+  
       this.ImageObs = ref.getDownloadURL();
-
-
-        this.ImageObs.subscribe(
-          url=>{
+      this.ImageObs.subscribe(
+        {
+          next: (url) => {
             imageUrl = url;
             console.log('Value:' + imageUrl);
-              resolve(url)
-          }, error => {
-            //console.log(error);
+            resolve(url)
+          },
+          error: (error) => {
+            console.log(error);
             var custom_err = "";
             var regex = /\(([^)]+)\)/; // get msg inside parenthesis
             var err_mssg = regex.exec(error)[1];              
@@ -263,11 +267,14 @@ export class FirestorageService {
             }
             reject(custom_err);
           }
-        );
-
+        }
+      );
     })
     
+  }
 
+  async getImagesFromUser(filter : string = '') {
+    
   }
 
   deleteThumbnail(imgName) : Promise<any>{

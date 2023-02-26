@@ -5,7 +5,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Observable } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
 import { Team } from 'src/app/models/team.interface';
-import { CameraService } from 'src/app/services/camera/camera.service';
+import { PhotoService } from 'src/app/services/photo/photo.service';
 import { CosGroupService } from 'src/app/services/cosGroup/cos-group.service';
 import { CosplayService } from 'src/app/services/cosplay/cosplay.service';
 import { TeamService } from 'src/app/services/team/team.service';
@@ -31,7 +31,7 @@ export class HomePage {
 
   constructor(public authService: AuthService,
     private cosService: CosplayService,
-    private cameraService: CameraService,
+    private PhotoService: PhotoService,
     private router: Router
     ) {
 
@@ -75,7 +75,7 @@ export class HomePage {
   }
 
   takePhoto() {
-    this.cameraService.addNewToGallery();
+    this.PhotoService.addNewToGallery();
   }
 
   goToNewCos(){

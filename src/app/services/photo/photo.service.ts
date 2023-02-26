@@ -9,7 +9,7 @@ import { Capacitor } from '@capacitor/core';
 @Injectable({
   providedIn: 'root'
 })
-export class CameraService {
+export class PhotoService {
   public photos: UserPhoto[] = [];
   private PHOTO_STORAGE: string = 'photos';
   private platform: Platform;
@@ -23,7 +23,7 @@ export class CameraService {
     obtener fotos :
 
     async ngOnInit() {
-      await this.photoService.loadSaved();
+      await this.photoService.loadFromGallery();
     }
 
     para hacer foto :
@@ -32,7 +32,7 @@ export class CameraService {
     
   */
 
-  public async loadSaved() {
+  public async loadFromGallery() {
     // Retrieve cached photo array data
 
     const photoList = await Preferences.get({ key: this.PHOTO_STORAGE });
@@ -68,7 +68,7 @@ export class CameraService {
     }).then((capturedPhoto)=> {
 
       // Save the picture and add it to photo collection
-      this.savePicture(capturedPhoto)
+      this.savePictureToGallery(capturedPhoto)
       .then((savedImageFile)=>{
         this.photos.unshift(savedImageFile);
       })
@@ -81,7 +81,7 @@ export class CameraService {
     });
   }
 
-  private async savePicture(photo: Photo) {
+  private async savePictureToGallery(photo: Photo) {
     // Convert photo to base64 format, required by Filesystem API to save
     
     const base64Data = await this.readAsBase64(photo);
