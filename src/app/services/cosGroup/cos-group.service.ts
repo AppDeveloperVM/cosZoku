@@ -27,6 +27,8 @@ export class CosGroupService {
   get cosplaygroupsmembers() { return this._cosplaygroupsmembers.asObservable(); }
 
   constructor( private readonly afs : AngularFirestore, private authService: AuthService ) {
+    console.log('cosgroup service');
+    
     this.usersCollection = afs.collection<ProfileUser>('users');
     this.cosgroupsCollection = afs.collection<CosGroup>('cosGroups');
     this.getcosGroups();

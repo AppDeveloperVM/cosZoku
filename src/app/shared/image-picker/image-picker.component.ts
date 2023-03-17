@@ -21,6 +21,8 @@ export class ImagePickerComponent implements OnInit {
   @Input() selectedImage: any = '';
   @Input() roundCropper = false;
   @Input() aspectRatio = 4 / 3;
+  @Input() enabledCropper = false;
+  @Input() simplePicker = false;
   imageReady = false;
   usePicker = false;
   isMobile = Capacitor.getPlatform() !== 'web';
@@ -88,17 +90,22 @@ export class ImagePickerComponent implements OnInit {
       resultType: CameraResultType.Base64,
     })
     .then( async (image) => {
-      const loading = await this.loadingCtrl.create();
-      await loading.present();
-    
       this.myImage = `data:image/jpeg;base64,${image.base64String}`;
+
+      if( !this.simplePicker ){
+        this.selectedImage = null;
+        const loading = await this.loadingCtrl.create();
+        await loading.present();  
+      } else {
+        this.selectedImage = this.myImage;
+        this.imagePick.emit(this.selectedImage);
+      }
       
     })
     .catch( (err) => {
 
     })
   
-    this.selectedImage = null;
   }
 
   // Called when cropper is ready

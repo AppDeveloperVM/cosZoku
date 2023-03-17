@@ -35,6 +35,8 @@ export class TeamItemComponent implements OnInit, OnChanges {
 	}
 
   getTeamMembers(teamId : string) {
+    console.log('get team members');
+    
     this.isLoading = true;
 
     this.teamId = this.team.id;

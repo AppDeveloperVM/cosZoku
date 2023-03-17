@@ -49,11 +49,11 @@ export class FirestorageService {
   });
 
   getCosplayPath(cosplayId: string, isMainPhoto: boolean = false) {
-    var extraPath = `cosplays/${ cosplayId }/${ (isMainPhoto ? 'main_photo/' : '') }`
+    var extraPath = `cosplays/${ cosplayId }/${ (isMainPhoto ? 'main_photo/' : 'gallery/') }`
     return extraPath;
   }
 
-  async fullUploadProcess(imageData: string | File, form : FormGroup, userId: string = '', extraPath: string = '') : Promise<any> {
+  async fullUploadProcess(imageData: string | File, form : FormGroup, userId: string = '', extraPath: string = '', imgSizes: any = this.imgSizes) : Promise<any> {
 
     let upload = new Promise(async (resolve, reject) => { 
       await this.decodeFile(imageData)
@@ -65,9 +65,10 @@ export class FirestorageService {
           //const imgSizes : any = [640,320,170];
           //imageName for upload ( same for all + size)
           const imageId = Math.random().toString(36).substring(2);
+          imgSizes = imgSizes!= '' ? imgSizes : this.imgSizes;
 
           //upload img x times in multiple sizes
-          this.imgSizes.forEach( async (imgSize, index) => {
+          imgSizes.forEach( async (imgSize, index) => {
 
             await this.compressFile(val,imgSize,index)
             .then(
@@ -226,11 +227,17 @@ export class FirestorageService {
       let suffix = '';
       switch(size){
         //0 the smallest
-        case 0: suffix = this.imgSizes[0];
+        case 0: 
+        case 140:
+          suffix = this.imgSizes[0];
           break;
-        case 1: suffix = this.imgSizes[1];
+        case 1: 
+        case 320:
+          suffix = this.imgSizes[1];
           break;
-        case 2: suffix = this.imgSizes[2];
+        case 2: 
+        case 640:
+          suffix = this.imgSizes[2];
           break;
         default: suffix = this.imgSizes[0];
       }
@@ -251,7 +258,6 @@ export class FirestorageService {
         {
           next: (url) => {
             imageUrl = url;
-            console.log('Value:' + imageUrl);
             resolve(url)
           },
           error: (error) => {

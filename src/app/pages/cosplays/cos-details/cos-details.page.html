@@ -25,49 +25,255 @@
       </div>
 
       <div *ngIf="!isLoading">
-        <form [formGroup]="detailsForm">
-          <ion-thumbnail class="thumbnail" >
-            <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
-            <img *ngIf="imageReady && !isEditEnabled" alt="Silhouette of mountains" [src]="imgSrc!= '' ? imgSrc : defaultImg" />
-          </ion-thumbnail>
 
-          <ion-list class="ion-no-padding mt-2" >
-            <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
-              <app-image-picker
-              *ngIf="isEditEnabled"
-              [selectedImage]="imgSrc"
-              [showPreview]="detailsForm.get('imageUrl').value"
-              [aspectRatio]="1 / 1"
-              (imagePick)="onImagePicked($event, true)">
-            </app-image-picker>
-            </ion-item>
-            <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
-              <ion-label color="label" position="stacked">Character Name</ion-label>
-              <ion-input formControlName="characterName" [readonly]="!isEditEnabled"></ion-input>
-            </ion-item>
-            <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
-              <ion-label color="label" position="stacked">Series</ion-label>
-              <ion-input formControlName="series" [readonly]="!isEditEnabled"></ion-input>
-            </ion-item>
-            <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
-              <ion-label color="label" position="stacked">Description</ion-label>
-              <ion-input formControlName="description" [readonly]="!isEditEnabled"></ion-input>
-            </ion-item>
-          </ion-list>
-        </form>
+        <div id="sections_toggle">
+          <div id="gallery_icon" *ngIf="sectionActive == 'info'"
+           (click)="changeDetailsSection('gallery')">
+            <ion-icon name="images-outline"></ion-icon>
+          </div>
 
-        <div padding>
-          <ion-segment color="label" >
-            <ion-segment-button  value="elements">
-              <ion-icon name="shirt-outline"></ion-icon>
-            </ion-segment-button>
-            <ion-segment-button value="tasks">
-              <ion-icon name="list-outline"></ion-icon>
-            </ion-segment-button>
-          </ion-segment>
+          <div id="info_icon" *ngIf="sectionActive == 'gallery'"
+            (click)="changeDetailsSection('info')">
+            <ion-icon name="person-circle-outline"></ion-icon>
+          </div>
         </div>
-      </div>
 
+        <div id="sections">
+          <div *ngIf="sectionActive == 'info'">
+            <form [formGroup]="detailsForm" >
+              <ion-thumbnail class="thumbnail" >
+                <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
+                <img *ngIf="imageReady && !isEditEnabled" alt="Silhouette of mountains" [src]="imgSrc!= '' ? imgSrc : defaultImg" />
+              </ion-thumbnail>
+    
+              <ion-list class="ion-no-padding mt-2" >
+                <ion-item *ngIf="isEditEnabled" [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
+                  <app-image-picker
+                  [selectedImage]="imgSrc"
+                  [showPreview]="detailsForm.get('imageUrl').value"
+                  [aspectRatio]="1 / 1"
+                  [simplePicker]="false"
+                  (imagePick)="onImagePicked($event, true)">
+                </app-image-picker>
+                </ion-item>
+                <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
+                  <ion-label color="label" position="stacked">Character Name</ion-label>
+                  <ion-input formControlName="characterName" [readonly]="!isEditEnabled"></ion-input>
+                </ion-item>
+                <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
+                  <ion-label color="label" position="stacked">Series</ion-label>
+                  <ion-input formControlName="series" [readonly]="!isEditEnabled"></ion-input>
+                </ion-item>
+                <ion-item [ngClass]="{'notclickable no-border': !isEditEnabled }" class="mb-2" fill="outline">
+                  <ion-label color="label" position="stacked">Description</ion-label>
+                  <ion-input formControlName="description" [readonly]="!isEditEnabled"></ion-input>
+                </ion-item>
+              </ion-list>
+            </form>
+    
+            <div padding>
+              <ion-segment color="label" [(ngModel)]="devSegment">
+                <ion-segment-button value="toMake">
+                  <ion-icon name="list-outline"></ion-icon>
+                </ion-segment-button>
+                <ion-segment-button value="toBuy">
+                  <ion-icon name="bag-add-outline"></ion-icon>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
+    
+            <div [ngSwitch]="devSegment">
+    
+              <div *ngSwitchCase="'toMake'">
+                <ion-item color="transparent" lines="none">
+                  <ion-title class="ion-text-center title">
+                    <h3>POR HACER</h3>
+                  </ion-title>
+                  <div id="option_buttons">
+                    <ion-button size="medium" color="medium" (click)="enableTaskEdit()">
+                      <ion-icon name="create-outline"></ion-icon>
+                    </ion-button>
+                    <ion-button color="medium" size="medium">
+                      <ion-icon name="add-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-item>
+                
+                <ion-list class="task-list">
+                  <ion-item lines="none" class="ion-no-padding bottom-border  header-item">
+                    <ion-row class="list-header">
+                      <ion-col>
+                        <div class="main">To Buy</div>
+                      </ion-col>
+                      <ion-col>
+                        <div class="sec">Cost</div>
+                      </ion-col >
+                      <ion-col>
+                        <div class="sec">Status</div>
+                      </ion-col>
+                    </ion-row>
+                  </ion-item>
+    
+                  <ion-item lines="none" class="ion-no-padding bottom-border task-item" >
+                    <ion-grid class="ion-no-padding">
+    
+                      <ion-row class="elements-list">
+                        <ion-col>
+                        <div class="elements-list-data">
+                          <div class="elements-list-name">el.name</div>
+                          <div class="elements-list-icons">
+                            <small>
+                            <ion-icon name="image-outline" *ngIf="true"></ion-icon>
+                          </small>
+                          </div>
+                        </div>
+                        </ion-col>
+                        <ion-col class="elements-list-data sec">
+                          <div>el.cost€</div>
+                        </ion-col>
+                        
+                        <ion-col class="elements-list-data sec">
+                          <div *ngIf="true" class="red">
+                            <ion-icon name="remove" size="large"></ion-icon>
+                          </div>
+                          <div *ngIf="false"  class="green">
+                            <ion-icon name="checkmark" size="large"></ion-icon>
+                          </div>
+                        </ion-col>
+                        <ion-button 
+                            class="delete_button"
+                            [style.visibility]=" isEditTaskEnabled ? 'visible' : 'hidden'"
+                          color="danger">
+                          <ion-icon name="close" ></ion-icon>
+                        </ion-button>
+                      </ion-row>
+    
+                    </ion-grid>
+                  </ion-item>
+                </ion-list>
+              </div>
+    
+              <div *ngSwitchCase="'toBuy'">
+                <ion-item color="transparent" lines="none">
+                  <ion-title class="ion-text-center title">
+                    <h3>POR COMPRAR</h3>
+                  </ion-title>
+                  <div id="option_buttons">
+                    <ion-button size="medium" color="medium" (click)="enableTaskEdit()">
+                      <ion-icon name="create-outline"></ion-icon>
+                    </ion-button>
+                    <ion-button color="medium" size="medium">
+                      <ion-icon name="add-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-item>
+                
+                <ion-list class="task-list">
+                  <ion-item lines="none" class="ion-no-padding bottom-border  header-item">
+                    <ion-row class="list-header">
+                      <ion-col>
+                        <div class="main">To Buy</div>
+                      </ion-col>
+                      <ion-col>
+                        <div class="sec">Cost</div>
+                      </ion-col >
+                      <ion-col>
+                        <div class="sec">Status</div>
+                      </ion-col>
+                    </ion-row>
+                  </ion-item>
+    
+                  <ion-item lines="none" class="ion-no-padding bottom-border task-item" >
+                    <ion-grid class="ion-no-padding">
+    
+                      <ion-row class="elements-list">
+                        <ion-col>
+                        <div class="elements-list-data">
+                          <div class="elements-list-name">el.name</div>
+                          <div class="elements-list-icons">
+                            <small>
+                            <ion-icon name="image-outline" *ngIf="true"></ion-icon>
+                          </small>
+                          </div>
+                        </div>
+                        </ion-col>
+                        <ion-col class="elements-list-data sec">
+                          <div>el.cost€</div>
+                        </ion-col>
+                        
+                        <ion-col class="elements-list-data sec">
+                          <div *ngIf="true" class="red">
+                            <ion-icon name="remove" size="large"></ion-icon>
+                          </div>
+                          <div *ngIf="false"  class="green">
+                            <ion-icon name="checkmark" size="large"></ion-icon>
+                          </div>
+                        </ion-col>
+                        <ion-button 
+                            class="delete_button"
+                            [style.visibility]=" isEditTaskEnabled ? 'visible' : 'hidden'"
+                          color="danger">
+                          <ion-icon name="close" ></ion-icon>
+                        </ion-button>
+                      </ion-row>
+    
+                    </ion-grid>
+                  </ion-item>
+                </ion-list>
+              </div>
+    
+            </div>
+          </div>
+
+          <div *ngIf="sectionActive == 'gallery'">
+            <div class="gallery_header">
+              <ion-thumbnail class="thumbnail" >
+                <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
+                <img *ngIf="imageReady" alt="Silhouette of mountains" [src]="imgSrc!= '' ? imgSrc : defaultImg" />
+              </ion-thumbnail>
+              <ion-list>
+                <ion-item [ngClass]="'notclickable no-border'" class="mb-2" fill="outline">
+                  <ion-label color="label" position="stacked" >Character Name</ion-label>
+                  <p class="char_name">{{cosplay.characterName}}</p>
+                </ion-item>
+              </ion-list>
+            </div>
+
+            <div class="gallery_main">
+              <div id="options">
+                <div id="option_buttons">
+                  <ion-button size="medium" color="medium" (click)="enableTaskEdit()">
+                    <ion-icon name="create-outline"></ion-icon>
+                  </ion-button>
+
+
+                  <app-image-picker
+                  [selectedImage]="imgSrc"
+                  [showPreview]="detailsForm.get('imageUrl').value"
+                  [aspectRatio]="1 / 1"
+                  [simplePicker]="true"
+                  (imagePick)="onImagePicked($event, false)"></app-image-picker>
+
+                </div>
+              </div>
+              
+              <div class="gallery_photos">
+                <ion-grid>
+                  <ion-row>
+                    <ion-col size="3" *ngFor="let photo of galleryImgs">
+                      <div class="photo">
+                        <img [src]="photo"/>
+                      </div>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
     </div>
     </div>
   </ion-grid>

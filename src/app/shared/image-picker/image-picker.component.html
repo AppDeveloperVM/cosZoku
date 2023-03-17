@@ -1,5 +1,4 @@
 <div class="picker">
-
   <ion-button (click)="selectImage()" 
   *ngIf="!myImage"
   expand="full" color="primary" id="btn_overlay"
@@ -8,7 +7,7 @@
 
   <image-cropper
     id="cropper"
-    *ngIf="myImage != null"
+    *ngIf="myImage != null && !simplePicker"
     #cropper
     [imageBase64]="myImage"
     [maintainAspectRatio]="true"
@@ -23,11 +22,10 @@
     (imageLoaded)="imageLoaded()"
   ></image-cropper>
  
-  <img [src]="selectedImage" *ngIf="(selectedImage != null && selectedImage != '')" />
-
+  <img [src]="selectedImage" *ngIf="(selectedImage != null && selectedImage != '') && !simplePicker" />
 </div>
 
-<ion-row *ngIf="myImage">
+<ion-row *ngIf="myImage && !simplePicker">
   <ion-progress-bar type="indeterminate" *ngIf="isLoading"></ion-progress-bar>
   <ion-col size="3" class="ion-text-center">
     <ion-button fill="clear" (click)="rotate()">

@@ -1,9 +1,23 @@
+.main-card {
+    position: relative;
+}
+
 #profile {
     height: 100%!important;
     background-color: rgb(57, 65, 100);
     border-radius:6px;
     margin-top: 5px;
     padding-top: 10px;
+}
+
+.char_name {
+    padding-top: 8px;
+}
+
+.gallery_main {
+    #options {
+        height: 50px;
+    }
 }
 
 ion-thumbnail {
@@ -21,3 +35,67 @@ ion-item {
 .no-border {
     --border-color: transparent!important;
 }
+
+
+
+ion-item.list-item {
+    --min-height: 40px;
+  }
+
+
+
+#option_buttons {
+    position: absolute;
+    right: 0;
+}
+
+#sections_toggle {
+    position: absolute;
+    right: 10px;
+
+}
+
+
+.task-list  {
+    position: relative;
+
+    .list-header {
+        width: 100%;
+        background-color: rgb(29, 50, 102);
+    }
+
+    ion-col {
+
+        div:first-child {
+            padding-left: 3px;
+        }
+
+        & > .main {
+            text-align: left;
+        }
+        & > .sec {
+        text-align: center;
+        }
+    }
+
+    .task-item {
+        pointer-events: none;
+        padding: 5px 0px 5px;
+    }
+
+    .delete_button {
+        position: absolute;
+        right:0;
+    }
+    
+}
+
+
+.elements-list ion-col div {
+    text-align: center;
+}
+
+
+.elements-list:first-child ion-col div div{
+    text-align: left;
+  }

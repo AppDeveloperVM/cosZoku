@@ -7,6 +7,7 @@ import { Cosplay } from 'src/app/models/cosplay.interface';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { CosplayService } from 'src/app/services/cosplay/cosplay.service';
 import { FirestorageService } from 'src/app/services/firestorage/firestorage.service';
+import { GalleryService } from 'src/app/services/gallery/gallery.service';
 
 @Component({
   selector: 'app-cos-details',
@@ -19,6 +20,8 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   cosplay: Cosplay;
   cosplayId: string;
   cosplaySub: Subscription;
+  galleryItems: any = [];
+  galleryImgs: any = [];
   detailsForm: FormGroup;
   validations = null;
   isLoading = true;
@@ -31,16 +34,18 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   uploadPercent: Observable<number>;
 
   isEditEnabled = false;
+  isEditTaskEnabled = false;
   imageReady = true;
   imageChanged = false;
-  isFormReady = false;
+  isFormReady = true;
   dataUpdated = false;
 
-  
+  devSegment = 'toMake';
+  sectionActive = 'gallery';
 
   constructor(
     private route: ActivatedRoute, private router: Router, private navCtrl: NavController,
-    private authService: AuthService, private cosService: CosplayService, 
+    private authService: AuthService, private cosService: CosplayService,private galleryService: GalleryService, 
     private firestorageService: FirestorageService, private loadingCtrl : LoadingController
   ) { }
 
@@ -64,9 +69,10 @@ export class CosDetailsPage implements OnInit, OnDestroy {
               
                 this.initForm();
 
-                if(this.cosplay?.imageUrl !== null && this.imageChanged == false){
+                if(this.cosplay?.imageUrl && this.imageChanged == false){
                   //Use saved info from db
                   this.assignImage();
+                  this.loadGalleryImgs(this.cosplay.id);
                 }
                 this.isLoading = false;
 
@@ -85,7 +91,6 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   }
 
   getCosplay() {
-    console.log(this.route.snapshot.paramMap);
     const id = this.route.snapshot.paramMap.get('id');
     return this.cosService.getCosplayById(id);
   }
@@ -104,7 +109,15 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   
 
   enableEdit() {
-    this.isEditEnabled = true;
+    this.isEditEnabled = !this.isEditEnabled;
+  }
+
+  enableTaskEdit(){
+    this.isEditTaskEnabled = !this.isEditTaskEnabled;
+  }
+
+  changeDetailsSection(section : string) {
+    this.sectionActive = section;
   }
 
 
@@ -115,8 +128,6 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     this.getImageByFbUrl(this.cosplay.imageUrl, 2, extraPath)
       .then((val)=>{
         this.imageReady = false;
-        console.log('img from Cosplay: ' + val + ', name: ' + this.imageName);
-        
         this.imgSrc = val;
         this.imageReady = true;
         //Use saved info from db
@@ -132,8 +143,35 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
   }
 
+  loadGalleryImgs(galleryId: string) {
+
+    this.galleryService.specifyGallery('cosplays',galleryId)
+    .then((res) => {
+      res.items.forEach((itemRef) => {
+        // All the items under listRef.
+        if(itemRef.name){      
+          const img = this.getGalleryImg(itemRef.name).then((img)=> {
+            this.galleryImgs.push(img);
+          })
+        }
+      });
+      
+    }).catch((error) => {
+      console.error(error);
+    });
+    
+  }
+
+  getGalleryImg(reference: string ) {
+    const ref = reference + '';
+    const imgName = ref.split('_')[0];
+    const imgSize = ref.split('_')[1];
+    const extraPath = `cosplays/${this.cosplay.id}/gallery/`;
+    return this.getImageByFbUrl(imgName, Number(imgSize), extraPath );
+  }
+
   getImageByFbUrl(imageName: string, size: number, extraPath: string = ''){
-    return this.firestorageService.getStorageImgUrl(imageName, size, this.userId, extraPath);
+    return imageName ? this.firestorageService.getStorageImgUrl(imageName, size, this.userId, extraPath) : null;
   }
 
   async onImagePicked(imageData: string | File, isMainPhoto: boolean = false) {
@@ -141,9 +179,10 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
       this.isFormReady = false;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
+      const imgSizes = [!isMainPhoto ? '320' : '']
 
       this.firestorageService
-      .fullUploadProcess(imageData,this.detailsForm, this.userId, extraPath)
+      .fullUploadProcess(imageData,this.detailsForm, this.userId, extraPath, imgSizes)
       .then((val) =>{
         const name = val.split('_')[0];
         this.imageName = name;
@@ -154,12 +193,9 @@ export class CosDetailsPage implements OnInit, OnDestroy {
           this.imgSrc = res;
           this.imageChanged = true;
           this.detailsForm.patchValue({ imageUrl: name }); // img updated in form
-          console.log('actualizado imgUrl: ' + name);
           
           this.isFormReady = true;
-        }).catch();
-
-        console.log("formReady, img src : "+ name );
+        }).catch((err)=> console.log(err));
       })
       .catch(err => {
         console.log(err);
@@ -189,8 +225,6 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
       this.cosService.saveCosplay(cosplay, cosplayId)
       .then((res)=> {
-
-        console.log('saveCosplay');
         
         if(this.imageChanged && this.oldImgName != '') {
           console.log('ImageToDelete : ' + this.oldImgName);
