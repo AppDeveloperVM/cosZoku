@@ -26,7 +26,7 @@ export class GalleryService {
 
   specifyGallery(collectionType: string, collectionId: string) {
     const storage = getStorage();
-    const listRef = ref(storage, `images/${this.userId}/${collectionType}/${collectionId}/gallery/`);
+    const listRef = ref(storage, `images/${this.userId}/${collectionType}/${collectionId}/gallery/`);    
     return listAll(listRef)
   }
   

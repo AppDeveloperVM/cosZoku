@@ -79,7 +79,7 @@ export class FirestorageService {
                   //Compressed and Uploaded Img to FireStorage
                   (val) => {
                     if(index == 0){
-                      
+                      resolve(val);
                     }else if(index == 2){
                       console.log("index: "+index);
                       form.patchValue({ imageUrl: imageId })

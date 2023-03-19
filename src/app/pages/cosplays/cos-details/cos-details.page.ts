@@ -42,6 +42,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
   devSegment = 'toMake';
   sectionActive = 'gallery';
+  imgsPath = '';
 
   constructor(
     private route: ActivatedRoute, private router: Router, private navCtrl: NavController,
@@ -125,6 +126,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     this.imageName = this.cosplay.imageUrl;
     this.oldImgName = this.cosplay.imageUrl;
     var extraPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
+    this.imgsPath = extraPath;
     this.getImageByFbUrl(this.cosplay.imageUrl, 2, extraPath)
       .then((val)=>{
         this.imageReady = false;
@@ -144,9 +146,11 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   }
 
   loadGalleryImgs(galleryId: string) {
+    this.galleryImgs = [];
 
-    this.galleryService.specifyGallery('cosplays',galleryId)
-    .then((res) => {
+    const gallery = this.galleryService.specifyGallery('cosplays',galleryId);
+    gallery.then((res) => {
+
       res.items.forEach((itemRef) => {
         // All the items under listRef.
         if(itemRef.name){      
@@ -179,7 +183,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
       this.isFormReady = false;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
-      const imgSizes = [!isMainPhoto ? '320' : '']
+      const imgSizes = [isMainPhoto ? '' : '320']
 
       this.firestorageService
       .fullUploadProcess(imageData,this.detailsForm, this.userId, extraPath, imgSizes)
@@ -188,18 +192,18 @@ export class CosDetailsPage implements OnInit, OnDestroy {
         this.imageName = name;
         
         console.log('Imagen Subida : ' + name);
-        this.getImageByFbUrl(name, 2, extraPath)
-        .then( (res) => {
-          this.imgSrc = res;
-          this.imageChanged = true;
-          this.detailsForm.patchValue({ imageUrl: name }); // img updated in form
-          
-          this.isFormReady = true;
-        }).catch((err)=> console.log(err));
+
+        if( isMainPhoto ) {
+          this.updateMainPhotoPreview();
+        }
+
+
       })
       .catch(err => {
         console.log(err);
-      });
+      }).finally(()=> {        
+        this.loadGalleryImgs(this.cosplay.id);
+      })
 
     }catch(err){
       console.log(err);
@@ -207,6 +211,18 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     }
 
   } 
+
+  updateMainPhotoPreview() {
+
+    this.getImageByFbUrl( this.imageName, 2, this.imgsPath)
+          .then( (res) => {
+            this.imgSrc = res;
+            this.imageChanged = true;
+            this.detailsForm.patchValue({ imageUrl: name }); // img updated in form
+            
+            this.isFormReady = true;
+          }).catch((err)=> console.log(err));
+  }
 
   saveChanges() {
     if (!this.detailsForm.valid) return;
