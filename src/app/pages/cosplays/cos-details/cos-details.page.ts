@@ -72,6 +72,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
                 if(this.cosplay?.imageUrl && this.imageChanged == false){
                   //Use saved info from db
+                  this.imgsPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
                   this.assignImage();
                   this.loadGalleryImgs(this.cosplay.id);
                 }
@@ -125,9 +126,8 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   assignImage(){
     this.imageName = this.cosplay.imageUrl;
     this.oldImgName = this.cosplay.imageUrl;
-    var extraPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
-    this.imgsPath = extraPath;
-    this.getImageByFbUrl(this.cosplay.imageUrl, 2, extraPath)
+    
+    this.getImageByFbUrl(this.cosplay.imageUrl, 2, this.imgsPath)
       .then((val)=>{
         this.imageReady = false;
         this.imgSrc = val;
@@ -180,6 +180,8 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
   async onImagePicked(imageData: string | File, isMainPhoto: boolean = false) {
     try {
+      console.log('onImagePicked:' , isMainPhoto);
+      
 
       this.isFormReady = false;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
@@ -188,18 +190,19 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       this.firestorageService
       .fullUploadProcess(imageData,this.detailsForm, this.userId, extraPath, imgSizes)
       .then((val) =>{
-        const name = val.split('_')[0];
-        this.imageName = name;
-        
-        console.log('Imagen Subida : ' + name);
+        if (val){
+          const name = val.split('_')[0];
+          this.imageName = name;
+          
+          console.log('Imagen Subida : ' + name);
 
-        if( isMainPhoto ) {
-          this.updateMainPhotoPreview();
+          if( isMainPhoto ) {
+            this.updateMainPhotoPreview();
+          } else {
+            this.isFormReady = true;
+          }
         }
-
-
-      })
-      .catch(err => {
+      }).catch(err => {
         console.log(err);
       }).finally(()=> {        
         this.loadGalleryImgs(this.cosplay.id);
@@ -215,13 +218,15 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   updateMainPhotoPreview() {
 
     this.getImageByFbUrl( this.imageName, 2, this.imgsPath)
-          .then( (res) => {
-            this.imgSrc = res;
-            this.imageChanged = true;
-            this.detailsForm.patchValue({ imageUrl: name }); // img updated in form
-            
-            this.isFormReady = true;
-          }).catch((err)=> console.log(err));
+      .then( (res) => {
+        console.log(res);
+        
+        this.imgSrc = res;
+        this.imageChanged = true;
+        this.detailsForm.patchValue({ imageUrl: res }); // img updated in form
+        
+        this.isFormReady = true;
+      }).catch((err)=> console.log(err));
   }
 
   saveChanges() {
