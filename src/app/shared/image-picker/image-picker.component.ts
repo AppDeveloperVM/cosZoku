@@ -94,23 +94,23 @@ export class ImagePickerComponent implements OnInit {
 
       if( !this.simplePicker ){
         this.selectedImage = null;
-        const loading = await this.loadingCtrl.create();
-        await loading.present();  
+        this.isLoading = true;
+        //const loading = await this.loadingCtrl.create();
+        //loading.present().then          
       } else {
         this.selectedImage = this.myImage;
         this.imagePick.emit(this.selectedImage);
       }
       
     })
-    .catch( (err) => {
-
-    })
+    .catch( (err) => { })
   
   }
 
   // Called when cropper is ready
   imageLoaded() {
-    this.loadingCtrl.dismiss();
+    //this.loadingCtrl.dismiss();
+    this.isLoading = false;
   }
  
   // Called when we finished editing (because autoCrop is set to false)
