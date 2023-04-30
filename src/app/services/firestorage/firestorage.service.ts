@@ -255,39 +255,29 @@ export class FirestorageService {
     
   }
 
-  deleteThumbnail(imgName, path : string = '') : Promise<any>{
+  deleteThumbnail(imgName: string,  path: string = ''): Promise<boolean[]> {
+    const full_path = 'images/' + path;
+    const promises: Promise<boolean>[] = [];
 
-    const full_path = 'images/'+ path;
-
-    const promise = new Promise( (resolve, reject) => {
-
-      //soon, delete cosGallery imgs
-      const arr_names = ['140','320','640'];
-      arr_names.forEach(size => {
-
+    this.imgSizes.forEach((size) => {
         try {
-          const name = imgName + '_' + size;
-          const ref = this.storage.storage.ref(full_path).child(name).delete();
-
-          ref.then( (res) => {
-            
-            console.log('fullpath: ' + full_path + name + ', delete?: ' + res);
-            
-            console.log('img deleted!');
-            resolve(true);
-          })
-          .catch( (err) => {
-            console.log('error : ' + err);
-            reject(false);
-          })
-        } catch(error){
-          console.log(error);
+            const name = imgName + '_' + size;
+            const ref = this.storage.storage.ref(full_path).child(name);
+            ref.getMetadata().then(() => {
+                ref.delete().then((res) => {
+                    promises.push(Promise.resolve(true));
+                });
+            }).catch((error) => {
+                console.log(error);
+                promises.push(Promise.resolve(false));
+            });
+        } catch (error) {
+            console.log(error);
+            promises.push(Promise.resolve(false));
         }
-        
-      });
     });
 
-    return promise;
-  }
-
+    return Promise.all(promises);
 }
+
+  }
