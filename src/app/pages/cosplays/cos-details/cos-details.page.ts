@@ -23,6 +23,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   cosplaySub: Subscription;
   galleryItems: any = [];
   galleryImgs: any = [];
+  loadingGallery: boolean = false;
   detailsForm: FormGroup;
   validations = {
     characterName: [
@@ -38,7 +39,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       { type: 'required', message: 'Img is required' }
     ]
   };
-  isLoading = true;
+  isCosplayLoading = true;
 
   defaultImg = 'https://ionicframework.com/docs/img/demos/thumbnail.svg';
   oldImgName = "";
@@ -47,7 +48,8 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   actualMapImage = "";
   uploadPercent: Observable<number>;
 
-  isEditEnabled = false;
+  isProfileEditEnabled = false;
+  isGalleryEditEnabled = false;
   isEditTaskEnabled = false;
   imageReady = true;
   imageChanged = false;
@@ -72,7 +74,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       }
       this.user$.subscribe((user)=> {
         
-        this.isLoading = true;
+        this.isCosplayLoading = true;
         if(user.uid) {
           this.userId = user.uid;
 
@@ -90,7 +92,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
                   this.assignImage();
                   this.loadGalleryImgs(this.cosplay.id);
                 }
-                this.isLoading = false;
+                this.isCosplayLoading = false;
 
               } else {
                 console.log("Error loading item - not found");
@@ -124,8 +126,12 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   }
   
 
-  enableEdit() {
-    this.isEditEnabled = !this.isEditEnabled;
+  enableProfileEdit() {
+    this.isProfileEditEnabled = !this.isProfileEditEnabled;
+  }
+
+  enableGalleryEdit() {
+    this.isGalleryEditEnabled = !this.isGalleryEditEnabled;
   }
 
   enableTaskEdit(){
@@ -160,32 +166,36 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   }
 
   loadGalleryImgs(galleryId: string) {
+    this.loadingGallery = true;
     this.galleryImgs = [];
 
     const gallery = this.galleryService.specifyGallery('cosplays', galleryId);
     gallery.then((res) => {
 
-      res.items.forEach((itemRef) => {
+      res.items.forEach(async (itemRef) => {
         // All the items under listRef.
         if (itemRef.name) {      
-          const img = this.getGalleryImg(itemRef.name).then((img)=> {
+
+            const img = await this.getGalleryImg(itemRef.name);
             this.galleryImgs.push(img);
-          })
         }
       });
       
     }).catch((error) => {
       console.error(error);
-    });
+    }).finally(() => {
+      this.loadingGallery = false;
+    })
     
   }
 
-  getGalleryImg(reference: string ) {
+  async getGalleryImg(reference: string ) {
     const ref = reference + '';
     const imgName = ref.split('_')[0];
     const imgSize = ref.split('_')[1];
     const extraPath = `cosplays/${this.cosplay.id}/gallery/`;
-    return this.getImageByFbUrl(imgName, Number(imgSize), extraPath );
+    const path = await this.getImageByFbUrl(imgName, Number(imgSize), extraPath );
+    return { imgName, path, imgSize };
   }
 
   getImageByFbUrl(imageName: string, size: number, extraPath: string = ''){
@@ -246,6 +256,17 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       }).catch((err)=> console.log(err));
   }
 
+  deletePhoto(photo: any) {
+    console.log('photo: ', photo);
+    var full_path = this.userId + '/' + this.firestorageService.getCosplayPath(this.cosplay.id, false);
+    this.firestorageService.deleteThumbnail(photo.imgName, full_path ).then((result)=> {
+      if (result) {
+        console.log('image deleted: ', result);
+        this.loadGalleryImgs(this.cosplay.id);
+      }
+    })
+  }
+
   saveChanges() {
     if (!this.detailsForm.valid) return;
 
@@ -278,7 +299,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
       setTimeout(() => {
         loadingEl.dismiss();
-        this.isEditEnabled = false;
+        this.isProfileEditEnabled = false;
       }, 500);
       
     });

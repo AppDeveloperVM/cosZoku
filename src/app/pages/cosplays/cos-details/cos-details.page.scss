@@ -18,6 +18,17 @@
     #options {
         height: 50px;
     }
+
+    #gallery_photos {
+        .photo {
+            .delete_button {
+                position: absolute;
+                
+                top:0px;
+                margin: 4px 0px;
+            }
+        }
+    }
 }
 
 ion-thumbnail {
