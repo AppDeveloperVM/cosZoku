@@ -74,7 +74,7 @@ export class FirestorageService {
           console.log("index: " + index);
           form.patchValue({ imageUrl: imageId })
       }
-      return uploadedVal;
+      return uploadedVal.imageId;
     });
 
     try {
@@ -144,31 +144,44 @@ export class FirestorageService {
     return promise;
   }
 
-  async uploadToServer(imageFile, imageId = Math.random().toString(36).substring(2), form: FormGroup, index: Number = null, userId: string = '', imagePath: string = ''): Promise<any> {
+  async uploadToServer(imageFile, imageId = Math.random().toString(36).substring(2), form : FormGroup, index : Number = null, userId = '', extraPath = ''): Promise<any> {
+    if (!imageFile) {
+      throw new Error('No image file provided');
+    }
+
     const file = imageFile;
-    const filePath = `images/${userId}/${imagePath}${imageId}`;
+    const filePath = `images/${userId ? userId + '/' : ''}${extraPath ?? ''}${imageId}`; // Image path + fileName  ||  can add profile_${id}
     const ref = this.storage.ref(filePath);
     const task = this.storage.upload(filePath, file);
     this.uploadPercent = task.percentageChanges();
     try {
-        await task;
-        const downloadURL = await ref.getDownloadURL();
-        return downloadURL;
+        await task.snapshotChanges().pipe(
+            finalize(async () => {
+                const downloadURL = await ref.getDownloadURL().toPromise();
+                return downloadURL;
+            })
+        ).toPromise();
+        return { imageId };
     } catch (error) {
         console.log(`Error with img ${index}: ${error}`);
         throw new Error('Error');
     }
   }
 
-  async getStorageImgUrl(fileName: string, size: number): Promise<string> {
+ 
+  
+  
+
+  async getStorageImgUrl(fileName: string, size: number, userId = '', extraPath = ''): Promise<any> {
     const suffix = this.imgSizes[size] || this.imgSizes[0];
     const file = `${fileName}_${suffix}`;
-    const filePath = `images/${file}`;
+    const filePath = `images/${userId ? userId + '/' : ''}${extraPath}${file}`;
     const ref = this.storage.ref(filePath);
     const url = await ref.getDownloadURL().toPromise();
- 
     return url;
   }
+  
+  
 
   async getImagesFromUser(filter : string = '') {
     
