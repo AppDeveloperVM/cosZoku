@@ -5,7 +5,7 @@
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button *ngIf="!isEditEnabled" (click)="enableEdit()" class="btn" color="button-add">
+      <ion-button *ngIf="!isEditEnabled && sectionActive == 'info'" (click)="enableEdit()" class="btn" color="button-add">
         EDIT
       </ion-button>
       <ion-button *ngIf="isEditEnabled && isFormReady" [disabled]="!detailsForm.valid" (click)="saveChanges()" class="btn" color="button-add">

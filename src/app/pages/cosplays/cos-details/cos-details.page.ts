@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import { LoadingController, NavController } from '@ionic/angular';
+import { log } from 'console';
 import { Observable, Subscription } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
 import { AuthService } from 'src/app/services/auth/auth.service';
@@ -23,7 +24,20 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   galleryItems: any = [];
   galleryImgs: any = [];
   detailsForm: FormGroup;
-  validations = null;
+  validations = {
+    characterName: [
+      { type: 'required', message: 'Character name is required' }
+    ],
+    series: [
+      { type: 'required', message: 'Series is required' }
+    ],
+    description: [
+      { type: 'minlength', message: 'Description must be at least 3 characters long' }
+    ],
+    imageUrl:  [
+      { type: 'required', message: 'Img is required' }
+    ]
+  };
   isLoading = true;
 
   defaultImg = 'https://ionicframework.com/docs/img/demos/thumbnail.svg';
@@ -148,12 +162,12 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   loadGalleryImgs(galleryId: string) {
     this.galleryImgs = [];
 
-    const gallery = this.galleryService.specifyGallery('cosplays',galleryId);
+    const gallery = this.galleryService.specifyGallery('cosplays', galleryId);
     gallery.then((res) => {
 
       res.items.forEach((itemRef) => {
         // All the items under listRef.
-        if(itemRef.name){      
+        if (itemRef.name) {      
           const img = this.getGalleryImg(itemRef.name).then((img)=> {
             this.galleryImgs.push(img);
           })
@@ -181,32 +195,34 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   async onImagePicked(imageData: string | File, isMainPhoto: boolean = false) {
     try {
       console.log('onImagePicked:' , isMainPhoto);
-      
 
       this.isFormReady = false;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
       const imgSizes = [isMainPhoto ? '' : '320']
 
-      this.firestorageService
-      .fullUploadProcess(imageData,this.detailsForm, this.userId, extraPath, imgSizes)
-      .then((val) =>{
-        if (val){
+      await this.firestorageService.fullUploadProcess(imageData, this.detailsForm, this.userId, extraPath, imgSizes)
+      .then(async (val) => {
+        if (val) {
+          console.log('val:', val);
           const name = val.split('_')[0];
+          const size = val.split('_')[1];
           this.imageName = name;
-          
           console.log('Imagen Subida : ' + name);
 
-          if( isMainPhoto ) {
-            this.updateMainPhotoPreview();
+          if (size == '640' && isMainPhoto) {
+            console.log('update main photo');
+            await this.updateMainPhotoPreview();
           } else {
             this.isFormReady = true;
           }
         }
-      }).catch(err => {
-        console.log(err);
-      }).finally(()=> {        
-        this.loadGalleryImgs(this.cosplay.id);
       })
+      .catch(err => {
+        console.log(err);
+      })
+      .finally(() => {
+        this.loadGalleryImgs(this.cosplay.id);
+      });
 
     }catch(err){
       console.log(err);
@@ -224,6 +240,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
         this.imgSrc = res;
         this.imageChanged = true;
         this.detailsForm.patchValue({ imageUrl: res }); // img updated in form
+        console.log('update main photo SUCCESS');
         
         this.isFormReady = true;
       }).catch((err)=> console.log(err));
@@ -257,7 +274,6 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       })
       .catch((err)=> {
         console.log('cannot update cosplay: ' + err);
-        
       })
 
       setTimeout(() => {

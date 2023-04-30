@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, ViewChild, ElementRef, Input, getPlatform } from '@angular/core';
-import { Platform, LoadingController } from '@ionic/angular';
+import { Platform, LoadingController, AlertController, ToastController } from '@ionic/angular';
 import { Capacitor} from '@capacitor/core';
 import { Camera, CameraResultType } from '@capacitor/camera';
 import {
@@ -28,10 +28,12 @@ export class ImagePickerComponent implements OnInit {
   isMobile = Capacitor.getPlatform() !== 'web';
   isLoading = false;
 
+  originalImage: any = null;
   myImage: any = null;
   transform: ImageTransform = {};
 
-  constructor(private platform: Platform, private loadingCtrl : LoadingController) { }
+  constructor(private platform: Platform, private loadingCtrl : LoadingController,
+    private alertCtrl: AlertController, private toastCtrl: ToastController) { }
 
   ngOnInit() {  
 
@@ -40,46 +42,6 @@ export class ImagePickerComponent implements OnInit {
       this.usePicker = true;
     } 
   }
-
-  /* onPickImage() {
-    if (!Capacitor.isPluginAvailable('Camera')) {
-      this.filePicker.nativeElement.click();
-      return;
-    }
-    Camera.getPhoto({
-      quality: 50,
-      source: CameraSource.Prompt, // Prompt : ask for picture from camera or gallery
-      correctOrientation: true,
-      width: 600,
-      resultType: CameraResultType.DataUrl
-    }).then(image => {
-      //selectedImage => src de campo <img>
-      this.selectedImage = image.dataUrl;
-      this.imagePick.emit(image.dataUrl);
-    }).catch(error => {
-      console.log(error);
-      if (this.usePicker) {
-        this.filePicker.nativeElement.click();
-      }
-      return false;
-    });
-  }
-
-  onFileChosen(event: Event) {
-    const pickedFile = (event.target as HTMLInputElement).files[0];
-    if (!pickedFile) {
-      return;
-    }
-    const fr = new FileReader();
-    fr.onload = () => {
-      //selectedImage => src de campo <img>
-      const dataUrl = fr.result.toString();
-      this.selectedImage = dataUrl;
-      this.imagePick.emit(pickedFile);
-      //this.imageReady = true;
-    };
-    fr.readAsDataURL(pickedFile);
-  } */
 
   //Image cropper methods 
   async selectImage() {
@@ -93,10 +55,9 @@ export class ImagePickerComponent implements OnInit {
       this.myImage = `data:image/jpeg;base64,${image.base64String}`;
 
       if( !this.simplePicker ){
+        this.originalImage = this.selectedImage;
         this.selectedImage = null;
-        this.isLoading = true;
-        //const loading = await this.loadingCtrl.create();
-        //loading.present().then          
+        this.isLoading = true;        
       } else {
         this.selectedImage = this.myImage;
         this.imagePick.emit(this.selectedImage);
@@ -116,12 +77,19 @@ export class ImagePickerComponent implements OnInit {
   // Called when we finished editing (because autoCrop is set to false)
   imageCropped(event: ImageCroppedEvent) {
     this.selectedImage = event.base64;
+    this.imageReady = true;
     this.imagePick.emit(this.selectedImage);
   }
  
   // We encountered a problem while loading the image
-  loadImageFailed() {
-    console.log('Image load failed!');
+  async loadImageFailed() {
+    const toast = await this.toastCtrl.create({
+      message: 'Could not load image',
+      duration: 3000,
+      color: 'danger',
+      position: 'top',
+    });
+    await toast.present();
   }
  
   // Manually trigger the crop
@@ -131,9 +99,26 @@ export class ImagePickerComponent implements OnInit {
   }
  
   // Discard all changes
-  discardChanges() {
-    this.myImage = null;
-    this.selectedImage = null;
+  async discardChanges() {
+    const alert = await this.alertCtrl.create({
+      header: 'Discard Changes?',
+      message: 'Are you sure you want to discard the changes?',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Discard',
+          handler: () => {
+            this.myImage = null;
+            this.selectedImage = this.originalImage;
+          }
+        }
+      ]
+    });
+
+  await alert.present();
   }
  
   // Edit the image

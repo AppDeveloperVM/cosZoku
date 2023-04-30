@@ -6,31 +6,25 @@ import { finalize, Observable } from 'rxjs';
 import imageCompression from 'browser-image-compression';
 
 function base64toBlob(base64Data, contentType) {
-  try {
-    contentType = contentType || '';
-    const sliceSize = 1024;
-    const byteCharacters = atob(base64Data);
-    const bytesLength = byteCharacters.length;
-    const slicesCount = Math.ceil(bytesLength / sliceSize);
-    const byteArrays = new Array(slicesCount);
+  contentType = contentType || '';
+  const sliceSize = 1024;
+  const byteCharacters = atob(base64Data);
+  const bytesLength = byteCharacters.length;
+  const slicesCount = Math.ceil(bytesLength / sliceSize);
+  const byteArrays = new Array(slicesCount);
 
-    for (let sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
-      const begin = sliceIndex * sliceSize;
-      const end = Math.min(begin + sliceSize, bytesLength);
+  for (let sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+    const begin = sliceIndex * sliceSize;
+    const end = Math.min(begin + sliceSize, bytesLength);
 
-      const bytes = new Array(end - begin);
-      for (let offset = begin, i = 0; offset < end; ++i, ++offset) {
-        bytes[i] = byteCharacters[offset].charCodeAt(0);
-      }
-      byteArrays[sliceIndex] = new Uint8Array(bytes);
+    const bytes = new Array(end - begin);
+    for (let offset = begin, i = 0; offset < end; ++i, ++offset) {
+      bytes[i] = byteCharacters[offset].charCodeAt(0);
     }
-    return new Blob(byteArrays, { type: contentType });
-  } catch (error) {
-    console.error('Error converting base64 to blob:', error);
-    return null;
+    byteArrays[sliceIndex] = new Uint8Array(bytes);
   }
+  return new Blob(byteArrays, { type: contentType });
 }
-
 
 
 @Injectable({
@@ -43,8 +37,8 @@ export class FirestorageService {
 
   form: FormGroup;
   imgReference;
-  public URLPublica: string = '';
-  isFormReady: boolean = false;
+  public URLPublica = '';
+  isFormReady = false;
   uploadPercent: Observable<number>;
   ImageObs: Observable<string>;
   urlImage: String;
@@ -55,35 +49,52 @@ export class FirestorageService {
   });
 
   getCosplayPath(cosplayId: string, isMainPhoto: boolean = false) {
-    const photoType = isMainPhoto ? 'main_photo' : 'gallery';
-    const extraPath = `cosplays/${cosplayId}/${photoType}/`;
+    var extraPath = `cosplays/${ cosplayId }/${ (isMainPhoto ? 'main_photo/' : 'gallery/') }`
     return extraPath;
   }
 
-  async fullUploadProcess(imageData: string | File, form: FormGroup, userId: string = '', extraPath: string = '', imgSizes: any = this.imgSizes): Promise<any> {
+  async fullUploadProcess(imageData: string | File, form : FormGroup, userId: string = '', extraPath: string = '', imgSizes: any = this.imgSizes) : Promise<any> {
 
-    const val = await this.decodeFile(imageData);
-    const imageId = Math.random().toString(36).substring(2);
-    imgSizes = imgSizes != '' ? imgSizes : this.imgSizes;
+    let upload = new Promise(async (resolve, reject) => { 
+      await this.decodeFile(imageData)
+      .then(
+      //Decoded
+        async (val) => {
 
-    const uploadPromises = imgSizes.map(async (imgSize, index) => {
-      const compressedVal = await this.compressFile(val, imgSize, index);
-      const uploadedVal = await this.uploadToServer(compressedVal, imageId + "_" + imgSize, form, index, userId, extraPath);
-      console.log("Img " + index + " Compressed and Uploaded Successfully.")
-      if (index === 2) {
-          console.log("index: " + index);
-          form.patchValue({ imageUrl: imageId })
-      }
-      return uploadedVal.imageId;
+          //const maxWidth = 320;
+          //const imgSizes : any = [640,320,170];
+          //imageName for upload ( same for all + size)
+          const imageId = Math.random().toString(36).substring(2);
+          imgSizes = imgSizes!= '' ? imgSizes : this.imgSizes;
+
+          //upload img x times in multiple sizes
+          for (let i = 0; i < imgSizes.length; i++) {
+            try {
+              const imgSize = imgSizes[i];
+              const compressedImg = await this.compressFile(val, imgSize, i);
+              const uploadedImg = await this.uploadToServer(compressedImg, imageId +"_"+imgSize, form, i, userId, extraPath);
+              console.log(`Img ${i} Compressed and Uploaded Successfully.`);
+              if (i === 2) {
+                console.log(`index: ${i}`);
+                form.patchValue({ imageUrl: imageId });
+              }
+              if (i === 0) {
+                resolve(uploadedImg);
+              }
+            } catch (err) {
+              console.error(`Error processing image ${i}: ${err}`);
+              reject(err);
+            }
+          }
+
+        },
+        (err) => console.log("Decoding Error: "+err)
+      ).catch(async err => {
+        console.log(await err);
+      });
     });
 
-    try {
-        const results = await Promise.all(uploadPromises);
-        return results[0];
-    } catch (err) {
-        console.error("Uploading error: " + err);
-        throw new Error(err);
-    }
+    return upload;
   }
 
   async decodeFile(imageData: string | File) : Promise<any> {
@@ -126,6 +137,7 @@ export class FirestorageService {
     await console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
 
     var promise = new Promise(async (resolve, reject) => {
+
       const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: maxWidth,//1920
@@ -138,71 +150,144 @@ export class FirestorageService {
         resolve(compressedFile);
       } catch (error) {
         reject('CompressProcess error with file '+index+': '+error);
-      }  
+      }
+      
+      
     });
 
     return promise;
   }
 
-  async uploadToServer(imageFile, imageId = Math.random().toString(36).substring(2), form : FormGroup, index : Number = null, userId = '', extraPath = ''): Promise<any> {
-    if (!imageFile) {
-      throw new Error('No image file provided');
-    }
+  uploadToServer(imageFile, imageId = Math.random().toString(36).substring(2), form : FormGroup, index : Number = null, userId: string = '', extraPath: string = '') : Promise<any> {
 
-    const file = imageFile;
-    const filePath = `images/${userId ? userId + '/' : ''}${extraPath ?? ''}${imageId}`; // Image path + fileName  ||  can add profile_${id}
-    const ref = this.storage.ref(filePath);
-    const task = this.storage.upload(filePath, file);
-    this.uploadPercent = task.percentageChanges();
-    try {
-        await task.snapshotChanges().pipe(
-            finalize(async () => {
-                const downloadURL = await ref.getDownloadURL().toPromise();
-                return downloadURL;
-            })
-        ).toPromise();
-        return { imageId };
-    } catch (error) {
-        console.log(`Error with img ${index}: ${error}`);
-        throw new Error('Error');
-    }
+    var promise = new Promise((resolve, reject) => {
+    
+      //UPLOAD IMAGE
+      console.log(userId + '/' + extraPath);
+      
+      const file = imageFile;
+      const filePath = `images/${ (userId!='' ? userId : '') + '/' +( extraPath!= '' ? extraPath : '' ) + imageId}`;// Image path + fileName  ||  can add profile_${id}
+      const ref = this.storage.ref(filePath);
+      const task = this.storage.upload(filePath, file);
+      var imageUrl = "";
+      this.uploadPercent = task.percentageChanges();
+      task.snapshotChanges().pipe( 
+        finalize(() => {
+          resolve(imageId)
+        })
+      ).subscribe(
+        //percentage Changes..
+        value => {console.log("Upload "+index+". Transferred: "+value.bytesTransferred + " of total :"+ value.totalBytes)},
+        error => { 
+          console.log('Error with img '+index+':'+ error); 
+          reject("Error.") 
+        },
+        () => { 
+        }
+      );
+
+
+    });//finishes promise
+      return promise;
   }
 
- 
-  
-  
+  async getStorageImgUrl(fileName: String, size : Number, userId : string = '', extraPath: string = '') : Promise<any> {
 
-  async getStorageImgUrl(fileName: string, size: number, userId = '', extraPath = ''): Promise<any> {
-    const suffix = this.imgSizes[size] || this.imgSizes[0];
-    const file = `${fileName}_${suffix}`;
-    const filePath = `images/${userId ? userId + '/' : ''}${extraPath}${file}`;
-    const ref = this.storage.ref(filePath);
-    const url = await ref.getDownloadURL().toPromise();
-    return url;
+    return new Promise((resolve, reject) => {
+      
+      let file = '';
+      let suffix = '';
+      switch(size){
+        //0 the smallest
+        case 0: 
+        case 140:
+          suffix = this.imgSizes[0];
+          break;
+        case 1: 
+        case 320:
+          suffix = this.imgSizes[1];
+          break;
+        case 2: 
+        case 640:
+          suffix = this.imgSizes[2];
+          break;
+        default: suffix = this.imgSizes[0];
+      }
+      file = fileName + "_" + suffix;
+
+      const filePath = `images/${ (userId!='' ? userId + '/' : '') + extraPath + file }`;
+      const ref = this.storage.ref(filePath);
+
+      /* const storage = getStorage();
+      const storageRef = ref(storage, filePath);
+      getDownloadURL(storageRef)
+      .then(url => {
+      }) */
+      var imageUrl = "";
+  
+      this.ImageObs = ref.getDownloadURL();
+      this.ImageObs.subscribe(
+        {
+          next: (url) => {
+            imageUrl = url;
+            resolve(url)
+          },
+          error: (error) => {
+            console.log(error);
+            var custom_err = "";
+            var regex = /\(([^)]+)\)/; // get msg inside parenthesis
+            var err_mssg = regex.exec(error)[1];              
+    
+            switch(err_mssg){
+              case 'storage/object-not-found':
+                custom_err = 'Image not found';
+              break;
+            }
+            reject(custom_err);
+          }
+        }
+      );
+    })
+    
   }
-  
-  
 
   async getImagesFromUser(filter : string = '') {
     
   }
 
-  async deleteThumbnail(imgName: string, path: string = ''): Promise<boolean> {
-    const full_path = 'images/' + path;
-    const arr_names = ['140', '320', '640'];
-  
-    try {
-      const promises = arr_names.map(async (size) => {
-        const name = imgName + '_' + size;
-        await this.storage.storage.ref(full_path).child(name).delete();
+  deleteThumbnail(imgName, path : string = '') : Promise<any>{
+
+    const full_path = 'images/'+ path;
+
+    const promise = new Promise( (resolve, reject) => {
+
+      //soon, delete cosGallery imgs
+      const arr_names = ['140','320','640'];
+      arr_names.forEach(size => {
+
+        try {
+          const name = imgName + '_' + size;
+          const ref = this.storage.storage.ref(full_path).child(name).delete();
+
+          ref.then( (res) => {
+            
+            console.log('fullpath: ' + full_path + name + ', delete?: ' + res);
+            
+            console.log('img deleted!');
+            resolve(true);
+          })
+          .catch( (err) => {
+            console.log('error : ' + err);
+            reject(false);
+          })
+        } catch(error){
+          console.log(error);
+        }
+        
       });
-      await Promise.all(promises);
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
+    });
+
+    return promise;
   }
-  
 
 }

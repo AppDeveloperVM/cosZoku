@@ -22,7 +22,8 @@
     (imageLoaded)="imageLoaded()"
   ></image-cropper>
  
-  <img [src]="selectedImage" *ngIf="(selectedImage != null && selectedImage != '') && !simplePicker" />
+  <img [src]="selectedImage != '' ? selectedImage : 'https://ionicframework.com/docs/img/demos/thumbnail.svg'" *ngIf="!simplePicker" />
+
 </div>
 
 <ion-row *ngIf="myImage && !simplePicker">
