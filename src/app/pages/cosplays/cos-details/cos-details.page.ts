@@ -1,9 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import { LoadingController, NavController } from '@ionic/angular';
 import { log } from 'console';
-import { Observable, Subscription } from 'rxjs';
+import { deleteObject, getDownloadURL, getStorage, ref } from 'firebase/storage';
+import { Observable, Subscription, concatMap, from, map, mergeMap, of, switchMap, tap, toArray } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { CosplayService } from 'src/app/services/cosplay/cosplay.service';
@@ -22,7 +23,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   cosplayId: string;
   cosplaySub: Subscription;
   galleryItems: any = [];
-  galleryImgs: any = [];
+  galleryImgs: Observable<any[]>;
   loadingGallery: boolean = false;
   detailsForm: FormGroup;
   validations = {
@@ -63,7 +64,8 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute, private router: Router, private navCtrl: NavController,
     private authService: AuthService, private cosService: CosplayService,private galleryService: GalleryService, 
-    private firestorageService: FirestorageService, private loadingCtrl : LoadingController
+    private firestorageService: FirestorageService, private loadingCtrl : LoadingController,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -90,9 +92,10 @@ export class CosDetailsPage implements OnInit, OnDestroy {
                   //Use saved info from db
                   this.imgsPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
                   this.assignImage();
-                  this.loadGalleryImgs(this.cosplay.id);
                 }
                 this.isCosplayLoading = false;
+
+                this.loadGalleryImgs(this.cosplay.id);
 
               } else {
                 console.log("Error loading item - not found");
@@ -166,27 +169,25 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   }
 
   loadGalleryImgs(galleryId: string) {
-    this.loadingGallery = true;
-    this.galleryImgs = [];
+    try {
+      this.loadingGallery = true;
+      this.galleryImgs = this.galleryService.getPhotos('cosplays', this.cosplay.id);
+      // const gallery = this.galleryService.specifyGallery('cosplays', galleryId);
+      // this.galleryImgs = from(gallery).pipe(
+      //   map((res) => res.items.filter(itemRef => itemRef.name)),
+      //   concatMap((items) => from(items)),
+      //   mergeMap(async (itemRef) => {
+      //     const img = await this.getGalleryImg(itemRef.name);
+      //     return img;
+      //   }),
+      //   toArray()
+      // );
 
-    const gallery = this.galleryService.specifyGallery('cosplays', galleryId);
-    gallery.then((res) => {
-
-      res.items.forEach(async (itemRef) => {
-        // All the items under listRef.
-        if (itemRef.name) {      
-
-            const img = await this.getGalleryImg(itemRef.name);
-            this.galleryImgs.push(img);
-        }
-      });
-      
-    }).catch((error) => {
-      console.error(error);
-    }).finally(() => {
       this.loadingGallery = false;
-    })
-    
+    } catch (error) {
+      // Handle the error
+      console.error('An error occurred:', error);
+    }
   }
 
   async getGalleryImg(reference: string ) {
@@ -241,6 +242,25 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
   } 
 
+  getImageUrlsObservable(imageName: string, path: string): Observable<string[]> {
+    const storagePath = `images/${path}/${imageName}`;
+  
+    // Create a reference to the image file
+    const storageRef = ref(getStorage(), storagePath);
+  
+    // Get the download URL of the image
+    const downloadUrl$ = from(getDownloadURL(storageRef));
+  
+    return downloadUrl$.pipe(
+      switchMap(url => {
+        // Create an array with the image URL
+        const imageUrlArray = [url];
+        return of(imageUrlArray);
+      })
+    );
+  }
+  
+
   updateMainPhotoPreview() {
 
     this.getImageByFbUrl( this.imageName, 2, this.imgsPath)
@@ -256,15 +276,24 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       }).catch((err)=> console.log(err));
   }
 
-  deletePhoto(photo: any) {
-    console.log('photo: ', photo);
-    var full_path = this.userId + '/' + this.firestorageService.getCosplayPath(this.cosplay.id, false);
-    this.firestorageService.deleteThumbnail(photo.imgName, full_path ).then((result)=> {
-      if (result) {
-        console.log('image deleted: ', result);
-        this.loadGalleryImgs(this.cosplay.id);
-      }
-    })
+  deletePhoto(url: string) {
+    console.log(url);
+    
+     this.galleryService.deletePhoto(url).subscribe(
+      () => {
+        console.log('Photo deleted successfully');
+        // Perform any subsequent actions after successful deletion
+        this.galleryImgs = this.galleryService.getPhotos('cosplays', this.cosplay.id)
+      },
+      (error) => {
+        console.error('Failed to delete photo:', error);
+        // Handle the error appropriately
+      });
+  }
+
+
+  trackByFn(index: number, item: any): string {
+    return item; // Use a unique identifier for each item in the list
   }
 
   saveChanges() {

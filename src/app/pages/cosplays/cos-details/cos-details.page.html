@@ -27,19 +27,19 @@
       <div *ngIf="!isCosplayLoading">
 
         <div id="sections_toggle">
-          <div id="gallery_icon" *ngIf="sectionActive == 'info'"
+          <div id="gallery_icon" *ngIf="sectionActive === 'info'"
            (click)="changeDetailsSection('gallery')">
             <ion-icon name="images-outline"></ion-icon>
           </div>
 
-          <div id="info_icon" *ngIf="sectionActive == 'gallery'"
+          <div id="info_icon" *ngIf="sectionActive === 'gallery'"
             (click)="changeDetailsSection('info')">
             <ion-icon name="person-circle-outline"></ion-icon>
           </div>
         </div>
 
         <div id="sections">
-          <div *ngIf="sectionActive == 'info'">
+          <div *ngIf="sectionActive === 'info'">
             <form [formGroup]="detailsForm" >
               <ion-thumbnail class="thumbnail" >
                 <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
@@ -242,7 +242,7 @@
             <div class="gallery_main">
               <div id="options">
                 <div id="option_buttons">
-                  <ion-button size="medium" color="medium" (click)="enableGalleryEdit()" *ngIf="galleryImgs.length > 0">
+                  <ion-button size="medium" color="medium" (click)="enableGalleryEdit()" >
                     <ion-icon name="create-outline"></ion-icon>
                   </ion-button>
 
@@ -255,21 +255,24 @@
 
                 </div>
               </div>
-              <ion-progress-bar type="indeterminate" *ngIf="loadingGallery"></ion-progress-bar>
-              <div id="gallery_photos">
+              
+              <div id="gallery_photos" >
                 <ion-grid>
                   <ion-row>
-                    <ion-col size="3" *ngFor="let photo of galleryImgs">
+                    <ion-col size="3" *ngFor="let photo of (galleryImgs | async) as photos">
                       <div class="photo">
                         <ion-button *ngIf="isGalleryEditEnabled" (click)="deletePhoto(photo)" class="delete_button" color="danger">
                           <ion-icon slot="icon-only" name="create-outline" ></ion-icon>
                         </ion-button>
-                        <img [src]="photo.path"/>
+                        <img [src]="photo"/>
                       </div>
                     </ion-col>
                   </ion-row>
                 </ion-grid>
               </div>
+              <ng-template #loadingSpinner>
+                <ion-progress-bar type="indeterminate"></ion-progress-bar>
+              </ng-template>
             </div>
 
           </div>
