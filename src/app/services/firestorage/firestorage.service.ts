@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertController } from '@ionic/angular';
-import { finalize, Observable } from 'rxjs';
+import { finalize, from, Observable, of, throwError } from 'rxjs';
 import imageCompression from 'browser-image-compression';
+import { log } from 'console';
 
 function base64toBlob(base64Data, contentType) {
   contentType = contentType || '';
@@ -53,109 +54,125 @@ export class FirestorageService {
     return extraPath;
   }
 
-  async fullUploadProcess(imageData: string | File, form : FormGroup, userId: string = '', extraPath: string = '', imgSizes: any = this.imgSizes) : Promise<any> {
-
-    let upload = new Promise(async (resolve, reject) => { 
-      await this.decodeFile(imageData)
-      .then(
-      //Decoded
-        async (val) => {
-
-          //const maxWidth = 320;
-          //const imgSizes : any = [640,320,170];
-          //imageName for upload ( same for all + size)
-          const imageId = Math.random().toString(36).substring(2);
-          imgSizes = imgSizes!= '' ? imgSizes : this.imgSizes;
-
-          //upload img x times in multiple sizes
-          for (let i = 0; i < imgSizes.length; i++) {
-            try {
-              const imgSize = imgSizes[i];
-              const compressedImg = await this.compressFile(val, imgSize, i);
-              const uploadedImg = await this.uploadToServer(compressedImg, imageId +"_"+imgSize, form, i, userId, extraPath);
-              console.log(`Img ${i} Compressed and Uploaded Successfully.`);
-              if (i === 2) {
-                console.log(`index: ${i}`);
-                form.patchValue({ imageUrl: imageId });
-              }
-              if (i === 0) {
-                resolve(uploadedImg);
-              }
-            } catch (err) {
-              console.error(`Error processing image ${i}: ${err}`);
-              reject(err);
-            }
-          }
-
-        },
-        (err) => console.log("Decoding Error: "+err)
-      ).catch(async err => {
-        console.log(await err);
-      });
-    });
-
-    return upload;
-  }
-
-  async decodeFile(imageData: string | File) : Promise<any> {
-    let imageFile;
-
-    var promise = new Promise(async (resolve, reject) => {
-    
-      if (typeof imageData === 'string') {
-        try {
-          imageFile = base64toBlob(
-            imageData.replace('data:image/jpeg;base64,', ''),
-            'image/jpeg');
-            resolve(imageFile);
-        } catch (error) {
-          //console.log(error);
-          console.log("Base64toBlob Error.");
-          console.log("> DOMException: The string to be decoded is not correctly encoded.");
-
-          let alert = this.alertCtrl.create({
-            header: 'Error',
-            message: 'Extensión de archivo no admitida.',
-            buttons: ['Ok']
-          });
-          (await alert).present();
-          
-          reject(error);
+  async fullUploadProcess(imageData: string | File, form: FormGroup, userId: string = '', extraPath: string = '', imgSizes: any = this.imgSizes): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        console.log('imageData: ',imageData);
+        
+        let val: File;
+        if (typeof imageData === 'string') {
+          val = await this.decodeFile(imageData);
+          console.log('val decoded: ', val);
+        } else {
+          val = imageData;
         }
-      } else {
-        imageFile = imageData;
-        resolve(imageFile);
+        
+        
+        const imageId = Math.random().toString(36).substring(2);
+        imgSizes = imgSizes !== '' ? imgSizes : this.imgSizes;
+  
+        const uploadPromises = imgSizes.map(async (imgSize, i) => {
+          try {
+            form.patchValue({ imageUrl: imageId });
+            if (val.type.startsWith('image/')) {
+              const compressedImg = await this.compressFile(val, imgSize, i);
+              return this.uploadToServer(compressedImg, imageId + "_" + imgSize, form, i, userId, extraPath);
+            } else {
+              throw new Error('The file given is not an image');
+            }
+          } catch (err) {
+            console.error(`Error processing image ${i}: ${err}`);
+            throw err;
+          }
+        });
+  
+        Promise.all(uploadPromises)
+          .then(results => {
+            const flattenedResults = results.reduce((acc, curr) => acc.concat(curr), []); // Flatten the nested array of results
+            console.log(flattenedResults);
+            resolve(flattenedResults);
+          })
+          .catch(error => {
+            console.error(error);
+            reject(error);
+          });
+        
+      } catch (err) {
+        console.log("Decoding Error: " + err);
+        reject(err);
       }
-     
     });
-
-    return promise;
-
   }
+
+  async decodeFile(imageData: string | File): Promise<File> {
+    if (typeof imageData === 'string') {
+      return new Promise<File>((resolve, reject) => {
+        const imageTypeRegExp = /^data:image\/(jpeg|jpg|png);base64,/;
+  
+        if (!imageTypeRegExp.test(imageData)) {
+          reject(new Error('The provided data is not a valid image.'));
+          return;
+        }
+  
+        try {
+          const base64Data = imageData.replace(imageTypeRegExp, '');
+          const byteCharacters = atob(base64Data);
+          const bytesLength = byteCharacters.length;
+          const byteArrays: Uint8Array[] = [];
+          const sliceSize = 1024;
+  
+          for (let offset = 0; offset < bytesLength; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+            const byteNumbers = new Array(slice.length);
+  
+            for (let i = 0; i < slice.length; i++) {
+              byteNumbers[i] = slice.charCodeAt(i);
+            }
+  
+            byteArrays.push(new Uint8Array(byteNumbers));
+          }
+  
+          const blob = new Blob(byteArrays, { type: 'image/jpeg' });
+          const fileName = 'thumbnail.jpg'; // Provide a dummy file name or obtain it from another source
+          const lastModified = Date.now(); // Provide a dummy last modified timestamp or obtain it from another source
+          const type = 'image/jpeg';
+  
+          const file = new File([blob], fileName, { lastModified, type });
+          resolve(file);
+        } catch (error) {
+          console.error('Base64toBlob Error:', error);
+          reject(new Error('Failed to decode image data.'));
+        }
+      });
+    } else if (imageData instanceof File) {
+      return Promise.resolve(imageData);
+    } else {
+      return Promise.reject(new Error('Invalid input data.'));
+    }
+  }
+  
+  
 
   async compressFile(imageFile : File,maxWidth = 1920, index : Number = null) : Promise<any> {
-    await console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
-
-    var promise = new Promise(async (resolve, reject) => {
+    if (imageFile.type.startsWith('image/')) {
+      console.log(`Original file size: ${imageFile.size / 1024 / 1024} MB`);
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: maxWidth,//1920
+        maxWidthOrHeight: maxWidth,
         useWebWorker: true
-      }
-
+      };
+    
       try {
         const compressedFile = await imageCompression(imageFile, options);
-        await console.log(`compressedFile `+index+`, size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
-        resolve(compressedFile);
+        console.log(`Compressed file ${index}, size: ${compressedFile.size / 1024 / 1024} MB`);
+        return compressedFile;
       } catch (error) {
-        reject('CompressProcess error with file '+index+': '+error);
+        throw new Error(`CompressProcess error with file ${index}: ${error}`);
       }
-      
-      
-    });
-
-    return promise;
+    } else {
+      throw new Error('The file given is not an image');
+    }
   }
 
   uploadToServer(imageFile, imageId = Math.random().toString(36).substring(2), form : FormGroup, index : Number = null, userId: string = '', extraPath: string = '') : Promise<any> {
@@ -191,64 +208,48 @@ export class FirestorageService {
       return promise;
   }
 
-  async getStorageImgUrl(fileName: String, size : Number, userId : string = '', extraPath: string = '') : Promise<any> {
-
-    return new Promise((resolve, reject) => {
-      
-      let file = '';
-      let suffix = '';
-      switch(size){
-        //0 the smallest
-        case 0: 
-        case 140:
-          suffix = this.imgSizes[0];
-          break;
-        case 1: 
-        case 320:
-          suffix = this.imgSizes[1];
-          break;
-        case 2: 
-        case 640:
-          suffix = this.imgSizes[2];
-          break;
-        default: suffix = this.imgSizes[0];
-      }
-      file = fileName + "_" + suffix;
-
-      const filePath = `images/${ (userId!='' ? userId + '/' : '') + extraPath + file }`;
-      const ref = this.storage.ref(filePath);
-
-      /* const storage = getStorage();
-      const storageRef = ref(storage, filePath);
-      getDownloadURL(storageRef)
-      .then(url => {
-      }) */
-      var imageUrl = "";
+  async getStorageImgUrl(fileName: string, size: number, userId: string = '', extraPath: string = ''): Promise<Observable<string>> {
+    let file = '';
+    let suffix = '';
+    switch (size) {
+      case 0:
+      case 140:
+        suffix = this.imgSizes[0];
+        break;
+      case 1:
+      case 320:
+        suffix = this.imgSizes[1];
+        break;
+      case 2:
+      case 640:
+        suffix = this.imgSizes[2];
+        break;
+      default:
+        suffix = this.imgSizes[0];
+    }
+    file = fileName + "_" + suffix;
   
-      this.ImageObs = ref.getDownloadURL();
-      this.ImageObs.subscribe(
-        {
-          next: (url) => {
-            imageUrl = url;
-            resolve(url)
-          },
-          error: (error) => {
-            console.log(error);
-            var custom_err = "";
-            var regex = /\(([^)]+)\)/; // get msg inside parenthesis
-            var err_mssg = regex.exec(error)[1];              
+    const filePath = `images/${(userId !== '' ? userId + '/' : '') + extraPath + file}`;
+    console.log(`filePath: ${filePath}`);
     
-            switch(err_mssg){
-              case 'storage/object-not-found':
-                custom_err = 'Image not found';
-              break;
-            }
-            reject(custom_err);
-          }
-        }
-      );
-    })
+    const storageRef = this.storage.ref(filePath);
+  
+    try {
+      const downloadURL = await from(storageRef.getDownloadURL()).toPromise();
+      return of(downloadURL) as Observable<string>; // Specify the return type as Observable<string>
+    } catch (error) {
+      console.log(error);
+      var custom_err = "";
+      var regex = /\(([^)]+)\)/; // get msg inside parenthesis
+      var err_mssg = regex.exec(error)[1];
     
+      switch (err_mssg) {
+        case 'storage/object-not-found':
+          custom_err = 'Image not found';
+          break;
+      }
+      return throwError(custom_err); // Throw an error as an Observable using throwError
+    }
   }
 
   async getImagesFromUser(filter : string = '') {

@@ -40,7 +40,7 @@ export class CosItemComponent implements OnInit, OnDestroy {
             .then((val)=>{
               console.log(val);
               
-              this.imageUrl = val;
+              //this.imageUrl = val;
               this.imageReady = true;
             })
             .catch((err) => {

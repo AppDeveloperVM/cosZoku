@@ -7,6 +7,8 @@ import {
   ImageCropperComponent,
   ImageTransform,
 } from 'ngx-image-cropper';
+import { log } from 'console';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-image-picker',
@@ -18,7 +20,7 @@ export class ImagePickerComponent implements OnInit {
   @ViewChild('cropper') cropper: ImageCropperComponent;
   @Output() imagePick = new EventEmitter<string | File>();
   @Input() showPreview = false;
-  @Input() selectedImage: any = '';
+  @Input() selectedImage : Observable<string>;
   @Input() roundCropper = false;
   @Input() aspectRatio = 4 / 3;
   @Input() enabledCropper = false;
@@ -36,31 +38,48 @@ export class ImagePickerComponent implements OnInit {
     private alertCtrl: AlertController, private toastCtrl: ToastController) { }
 
   ngOnInit() {  
-
      if ((this.platform.is('mobile') && !this.platform.is('hybrid')) ||
      this.platform.is('desktop') ) {
       this.usePicker = true;
     } 
   }
 
+  ngOnChanges()  {
+    if(this.selectedImage){
+      this.selectedImage.subscribe(image => {
+        if (image) {
+          // Do something when the selectedImage has a value
+          console.log('Image exists:', image);
+        } else {
+          // Do something when the selectedImage is empty
+          console.log('Image is empty');
+        }
+      })
+    }
+    
+  }
+
   //Image cropper methods 
   async selectImage() {
 
-    const image = await Camera.getPhoto({
+    await Camera.getPhoto({
       quality: 100,
       allowEditing: true,
       resultType: CameraResultType.Base64,
-    })
-    .then( async (image) => {
+    }).then( async (image) => {
       this.myImage = `data:image/jpeg;base64,${image.base64String}`;
 
       if( !this.simplePicker ){
-        this.originalImage = this.selectedImage;
-        this.selectedImage = null;
-        this.isLoading = true;        
+        this.selectedImage.subscribe((img)=> {
+          this.originalImage = img;
+          //this.selectedImage.next(m);
+        })
+        
+        
+        //this.isLoading = true;        
       } else {
-        this.selectedImage = this.myImage;
-        this.imagePick.emit(this.selectedImage);
+        //this.selectedImage = this.myImage;
+        this.imagePick.emit(this.myImage)
       }
       
     })
@@ -76,9 +95,9 @@ export class ImagePickerComponent implements OnInit {
  
   // Called when we finished editing (because autoCrop is set to false)
   imageCropped(event: ImageCroppedEvent) {
-    this.selectedImage = event.base64;
+    this.myImage = event.base64;
     this.imageReady = true;
-    this.imagePick.emit(this.selectedImage);
+    this.imagePick.emit(this.myImage);
   }
  
   // We encountered a problem while loading the image

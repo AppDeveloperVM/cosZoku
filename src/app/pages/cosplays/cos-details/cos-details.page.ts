@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import { LoadingController, NavController } from '@ionic/angular';
 import { log } from 'console';
 import { deleteObject, getDownloadURL, getStorage, ref } from 'firebase/storage';
-import { Observable, Subscription, concatMap, from, map, mergeMap, of, switchMap, tap, toArray } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, concatMap, finalize, from, map, mergeMap, of, switchMap, tap, toArray } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { CosplayService } from 'src/app/services/cosplay/cosplay.service';
@@ -25,6 +26,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   galleryItems: any = [];
   galleryImgs: Observable<any[]>;
   loadingGallery: boolean = false;
+  showLoading: boolean = false;
   detailsForm: FormGroup;
   validations = {
     characterName: [
@@ -45,7 +47,8 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   defaultImg = 'https://ionicframework.com/docs/img/demos/thumbnail.svg';
   oldImgName = "";
   imageName = "";
-  imgSrc : string = '';
+  imgSrc$: Observable<string>;
+
   actualMapImage = "";
   uploadPercent: Observable<number>;
 
@@ -65,6 +68,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     private route: ActivatedRoute, private router: Router, private navCtrl: NavController,
     private authService: AuthService, private cosService: CosplayService,private galleryService: GalleryService, 
     private firestorageService: FirestorageService, private loadingCtrl : LoadingController,
+    private afs: AngularFireStorage,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -74,9 +78,10 @@ export class CosDetailsPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/');
         return;
       }
+      
       this.user$.subscribe((user)=> {
-        
         this.isCosplayLoading = true;
+        this.loadingGallery = true;
         if(user.uid) {
           this.userId = user.uid;
 
@@ -85,18 +90,11 @@ export class CosDetailsPage implements OnInit, OnDestroy {
             (cosplay) => {
               if(cosplay != null){
                 this.cosplay = cosplay.data();
-              
                 this.initForm();
-
-                if(this.cosplay?.imageUrl && this.imageChanged == false){
-                  //Use saved info from db
-                  this.imgsPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
-                  this.assignImage();
-                }
+                this.imgsPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
+                this.assignImage();
+                this.loadGalleryImgs(); // works
                 this.isCosplayLoading = false;
-
-                this.loadGalleryImgs(this.cosplay.id);
-
               } else {
                 console.log("Error loading item - not found");
                 this.router.navigate(['/']);
@@ -104,7 +102,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
             }
           )
           .catch((err)=> {
-
+            console.log('Error loading cosplay data');
           });
         }
       });
@@ -146,93 +144,92 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   }
 
 
-  assignImage(){
-    this.imageName = this.cosplay.imageUrl;
-    this.oldImgName = this.cosplay.imageUrl;
+  async assignImage(){
+    if (this.cosplay.imageUrl){
+      console.log('assign img');
     
-    this.getImageByFbUrl(this.cosplay.imageUrl, 2, this.imgsPath)
-      .then((val)=>{
-        this.imageReady = false;
-        this.imgSrc = val;
-        this.imageReady = true;
-        //Use saved info from db
-        //not saving correct one ..............
-        if(this.detailsForm.get('imageUrl').value == null && this.cosplay.imageUrl != null){
-          this.detailsForm.patchValue({ imageUrl: this.cosplay.imageUrl })
-          this.imageReady = true;
-        }
-      })
-      .catch( (err) => {
-        console.log('error obtaining data  : ' + err);
-      });
-
+      this.imageName = this.cosplay.imageUrl;
+      this.oldImgName = this.cosplay.imageUrl;
+      const extraPath = `cosplays/${this.cosplay.id}/main_photo/`;
+      const imageUrl = await this.getImageByFbUrl(this.imageName, 360, extraPath);
+      this.imgSrc$ = imageUrl;
+    }
   }
 
-  loadGalleryImgs(galleryId: string) {
+  async loadGalleryImgs() {
     try {
       this.loadingGallery = true;
-      this.galleryImgs = this.galleryService.getPhotos('cosplays', this.cosplay.id);
-      // const gallery = this.galleryService.specifyGallery('cosplays', galleryId);
-      // this.galleryImgs = from(gallery).pipe(
-      //   map((res) => res.items.filter(itemRef => itemRef.name)),
-      //   concatMap((items) => from(items)),
-      //   mergeMap(async (itemRef) => {
-      //     const img = await this.getGalleryImg(itemRef.name);
-      //     return img;
-      //   }),
-      //   toArray()
-      // );
+      this.showLoading = true;
+      this.galleryImgs = await this.galleryService.getPhotos('cosplays', this.cosplay.id);
 
       this.loadingGallery = false;
+      this.showLoading = false;
     } catch (error) {
       // Handle the error
       console.error('An error occurred:', error);
     }
   }
 
-  async getGalleryImg(reference: string ) {
-    const ref = reference + '';
-    const imgName = ref.split('_')[0];
-    const imgSize = ref.split('_')[1];
-    const extraPath = `cosplays/${this.cosplay.id}/gallery/`;
-    const path = await this.getImageByFbUrl(imgName, Number(imgSize), extraPath );
-    return { imgName, path, imgSize };
-  }
+  // async getGalleryImg(reference: string ) {
+  //   const ref = reference + '';
+  //   const imgName = ref.split('_')[0];
+  //   const imgSize = ref.split('_')[1];
+  //   const extraPath = `cosplays/${this.cosplay.id}/gallery/`;
+  //   const path = await this.getImageByFbUrl(imgName, Number(imgSize), extraPath );
+  //   return { imgName, path, imgSize };
+  // }
 
-  getImageByFbUrl(imageName: string, size: number, extraPath: string = ''){
-    return imageName ? this.firestorageService.getStorageImgUrl(imageName, size, this.userId, extraPath) : null;
+  async getImageByFbUrl(imageName: string, size: number, extraPath: string = '') {
+    if (imageName) {
+      console.log(`getImageByFbUrl- imageName: ${imageName}, size: ${size}, extraPath:${extraPath}`);
+      
+      try {
+        const imgUrl = await this.firestorageService.getStorageImgUrl(imageName, size, this.userId, extraPath);
+        return imgUrl;
+      } catch (err) {
+        console.error(err);
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   async onImagePicked(imageData: string | File, isMainPhoto: boolean = false) {
     try {
-      console.log('onImagePicked:' , isMainPhoto);
+      console.log('isMainPhoto:' , isMainPhoto);
 
       this.isFormReady = false;
+      this.showLoading = true;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
       const imgSizes = [isMainPhoto ? '' : '320']
 
       await this.firestorageService.fullUploadProcess(imageData, this.detailsForm, this.userId, extraPath, imgSizes)
       .then(async (val) => {
         if (val) {
+          const img = val[0];
           console.log('val:', val);
-          const name = val.split('_')[0];
-          const size = val.split('_')[1];
+          const name = img.split('_')[0];
+          const size = img.split('_')[1];
           this.imageName = name;
+          //imgSrc$
           console.log('Imagen Subida : ' + name);
 
-          if (size == '640' && isMainPhoto) {
+          if (isMainPhoto) {
             console.log('update main photo');
             await this.updateMainPhotoPreview();
+            this.isFormReady = true;
           } else {
             this.isFormReady = true;
           }
+          this.showLoading = false;
         }
       })
       .catch(err => {
         console.log(err);
       })
       .finally(() => {
-        this.loadGalleryImgs(this.cosplay.id);
+        this.loadGalleryImgs();
       });
 
     }catch(err){
@@ -262,18 +259,21 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   
 
   updateMainPhotoPreview() {
+    console.log('updateMainPhotoPreview');
+    
+    
+    this.getImageByFbUrl(this.imageName, 2, this.imgsPath)
+    .then((res) => {
+      console.log('res:', res);
 
-    this.getImageByFbUrl( this.imageName, 2, this.imgsPath)
-      .then( (res) => {
-        console.log(res);
-        
-        this.imgSrc = res;
-        this.imageChanged = true;
-        this.detailsForm.patchValue({ imageUrl: res }); // img updated in form
-        console.log('update main photo SUCCESS');
-        
-        this.isFormReady = true;
-      }).catch((err)=> console.log(err));
+      this.imgSrc$ = res;
+      this.imageChanged = true;
+      this.detailsForm.patchValue({ imageUrl: res }); // img updated in form
+      console.log('update main photo SUCCESS');
+
+      this.isFormReady = true;
+    })
+    .catch((err) => console.log(err));
   }
 
   deletePhoto(url: string) {

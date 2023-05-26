@@ -20,7 +20,7 @@
     <div class="row">
     <div class="main-card col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-12">
       
-      <div *ngIf="isCosplayLoading">
+      <div *ngIf="isCosplayLoading || showLoading">
         <ion-progress-bar type="indeterminate"></ion-progress-bar>
       </div>
 
@@ -43,13 +43,18 @@
             <form [formGroup]="detailsForm" >
               <ion-thumbnail class="thumbnail" >
                 <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
-                <img *ngIf="imageReady && !isProfileEditEnabled" alt="Silhouette of mountains" [src]="imgSrc!= '' ? imgSrc : defaultImg" />
+                <ng-container *ngIf="imgSrc$ | async as imgSrc else defaultTemplate">
+                  <img [src]="imgSrc" />
+                </ng-container>
+                <ng-template #defaultTemplate>
+                  <img alt="Silhouette of mountains" [src]="defaultImg" />
+                </ng-template>
               </ion-thumbnail>
     
               <ion-list class="ion-no-padding mt-2" >
                 <ion-item *ngIf="isProfileEditEnabled" [ngClass]="{'notclickable no-border': !isProfileEditEnabled }" class="mb-2" fill="outline">
                   <app-image-picker
-                  [selectedImage]="imgSrc"
+                  [selectedImage]="imgSrc$"
                   [showPreview]="detailsForm.get('imageUrl').value"
                   [aspectRatio]="1 / 1"
                   [simplePicker]="false"
@@ -229,8 +234,14 @@
             <div class="gallery_header">
               <ion-thumbnail class="thumbnail" >
                 <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
-                <img *ngIf="imageReady" alt="Silhouette of mountains" [src]="imgSrc!= '' ? imgSrc : defaultImg" />
+                <ng-container *ngIf="imgSrc$ | async as imgSrc else defaultTemplate">
+                  <img [src]="imgSrc" />
+                </ng-container>
+                <ng-template #defaultTemplate>
+                  <img alt="Silhouette of mountains" [src]="defaultImg" />
+                </ng-template>
               </ion-thumbnail>
+
               <ion-list>
                 <ion-item [ngClass]="'notclickable no-border'" class="mb-2" fill="outline">
                   <ion-label color="label" position="stacked">Character Name</ion-label>
@@ -242,21 +253,20 @@
             <div class="gallery_main">
               <div id="options">
                 <div id="option_buttons">
-                  <ion-button size="medium" color="medium" (click)="enableGalleryEdit()" >
+                  <ion-button *ngIf="galleryImgs | async" size="medium" color="medium" (click)="enableGalleryEdit()" >
                     <ion-icon name="create-outline"></ion-icon>
                   </ion-button>
 
                   <app-image-picker
-                  [selectedImage]="imgSrc"
+                  [selectedImage]="imgSrc$"
                   [showPreview]="detailsForm.get('imageUrl').value"
                   [aspectRatio]="1 / 1"
                   [simplePicker]="true"
                   (imagePick)="onImagePicked($event, false)"></app-image-picker>
-
                 </div>
               </div>
               
-              <div id="gallery_photos" >
+              <div id="gallery_photos" *ngIf="!loadingGallery">
                 <ion-grid>
                   <ion-row>
                     <ion-col size="3" *ngFor="let photo of (galleryImgs | async) as photos">
@@ -270,7 +280,7 @@
                   </ion-row>
                 </ion-grid>
               </div>
-              <ng-template #loadingSpinner>
+              <ng-template *ngIf="loadingGallery">
                 <ion-progress-bar type="indeterminate"></ion-progress-bar>
               </ng-template>
             </div>

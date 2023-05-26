@@ -5,11 +5,12 @@
     >Select image
   </ion-button>
 
-  <image-cropper
+  <ng-container *ngIf="!simplePicker && !myImage == null">
+    <image-cropper
     id="cropper"
-    *ngIf="myImage != null && !simplePicker"
+    *ngIf="selectedImage | async as SelectedImage"
     #cropper
-    [imageBase64]="myImage"
+    [imageBase64]="SelectedImage"
     [maintainAspectRatio]="true"
     [aspectRatio]="aspectRatio"
     format="jpeg"
@@ -19,34 +20,38 @@
     [roundCropper]="roundCropper"
     (imageCropped)="imageCropped($event)"
     (loadImageFailed)="loadImageFailed()"
-    (imageLoaded)="imageLoaded()"
-  ></image-cropper>
+    (imageLoaded)="imageLoaded()">
+  </image-cropper>
+  </ng-container>
+  
  
-  <img [src]="selectedImage != '' ? selectedImage : 'https://ionicframework.com/docs/img/demos/thumbnail.svg'" *ngIf="!simplePicker" />
+  <img [src]="selectedImage | async" *ngIf="!simplePicker && myImage == null" />
 
 </div>
 
-<ion-row *ngIf="myImage && !simplePicker">
-  <ion-progress-bar type="indeterminate" *ngIf="isLoading"></ion-progress-bar>
-  <ion-col size="3" class="ion-text-center">
-    <ion-button fill="clear" (click)="rotate()">
-      <ion-icon name="refresh" slot="start"></ion-icon> Rotate
-    </ion-button>
-  </ion-col>
-  <ion-col size="2" class="ion-text-center">
-    <ion-button fill="clear" (click)="flipHorizontal()"> Flip X </ion-button>
-  </ion-col> 
-  <ion-col size="2" class="ion-text-center">
-    <ion-button fill="clear" (click)="flipVertical()"> Flip Y </ion-button>
-  </ion-col>
-  <ion-col size="2" class="ion-text-center" >
-    <ion-button  color="danger" (click)="discardChanges()">
-      <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-    </ion-button>
-  </ion-col >
-  <ion-col size="3">
-    <ion-button (click)="cropImage()" *ngIf="myImage">
-      <ion-icon slot="icon-only" name="checkmark"></ion-icon>
-    </ion-button>
-  </ion-col>  
-</ion-row>
+<ng-container *ngIf="!simplePicker"> 
+  <ion-row *ngIf="selectedImage | async">
+    <ion-progress-bar type="indeterminate" *ngIf="isLoading"></ion-progress-bar>
+    <ion-col size="3" class="ion-text-center">
+      <ion-button fill="clear" (click)="rotate()">
+        <ion-icon name="refresh" slot="start"></ion-icon> Rotate
+      </ion-button>
+    </ion-col>
+    <ion-col size="2" class="ion-text-center">
+      <ion-button fill="clear" (click)="flipHorizontal()"> Flip X </ion-button>
+    </ion-col> 
+    <ion-col size="2" class="ion-text-center">
+      <ion-button fill="clear" (click)="flipVertical()"> Flip Y </ion-button>
+    </ion-col>
+    <ion-col size="2" class="ion-text-center" >
+      <ion-button  color="danger" (click)="discardChanges()">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-col >
+    <ion-col size="3">
+      <ion-button (click)="cropImage()" *ngIf="selectedImage | async">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-col>  
+  </ion-row>
+</ng-container>
