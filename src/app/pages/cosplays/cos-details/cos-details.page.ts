@@ -154,10 +154,12 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       this.oldImgName = this.cosplay.imageUrl;
       const extraPath = `cosplays/${this.cosplay.id}/main_photo/`;
       const imageUrl = await this.getImageByFbUrl(this.imageName, 360, extraPath);
-      this.profileImg$ = imageUrl;
-      this.profileImg$.subscribe((img) => {
-        this.profileImg.next(img);
-      });
+      if(imageUrl) {
+        this.profileImg$ = imageUrl;
+        this.profileImg$.subscribe((img) => {
+          this.profileImg.next(img);
+        });
+      }
     }
   }
 
@@ -216,10 +218,12 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       await this.firestorageService.fullUploadProcess(imageData, this.detailsForm, this.userId, extraPath, imgSizes)
       .then(async (fullUploadReponse) => {
         if (fullUploadReponse) {
+
           console.log('val:', fullUploadReponse);
           const img = fullUploadReponse.images[0];
-          const firebaseId = fullUploadReponse.firebaseId;
-          
+          const firebaseId = fullUploadReponse.firebaseImageId;
+          this.detailsForm.patchValue({ imageUrl: firebaseId });
+          console.log(this.detailsForm.value);
           const name = img.split('_')[0];
           const size = img.split('_')[1];
           this.imageName = name;
@@ -274,19 +278,29 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     
     this.getImageByFbUrl(this.imageName, 2, this.imgsPath)
     .then((res) => {
-      console.log('res:', res);
+     
 
       this.profileImg$ = res;
       this.profileImg$.subscribe((img) => {
+        if (this.imageName !== this.cosplay.imageUrl) {
+          this.updateSavedPhoto(this.imageName);
+        }
         this.profileImg.next(img);
       });
-      this.imageChanged = true;
-      this.detailsForm.patchValue({ imageUrl: res }); // img updated in form
-      console.log('update main photo SUCCESS');
 
-      this.isFormReady = true;
+      
+
     })
     .catch((err) => console.log(err));
+  }
+
+  updateSavedPhoto(img: string) {
+    this.imageChanged = true;
+    
+    this.detailsForm.patchValue({ imageUrl: img }); // img updated in form
+    console.log('photo updated!');
+    
+    this.isFormReady = true;
   }
 
   deletePhoto(url: string) {

@@ -73,16 +73,10 @@ export class FirestorageService {
   
         const uploadPromises = sizes.map(async (imgSize, i) => {
           try {
-            //form.patchValue({ imageUrl: imageId });
+            
             if (val.type.startsWith('image/')) {
               const compressedImg = await this.compressFile(val, imgSize, i);
-
-              // const updatedObject = {
-              //   firebaseId: imageId,
-              //   images: uploadResponse,
-              // };
-              
-              return this.uploadToServer(compressedImg, imageId + "_" + imgSize, form, i, userId, extraPath);
+              return this.uploadToServer(compressedImg, imageId + "_" + imgSize, form, i, userId, extraPath)
             } else {
               throw new Error('The file given is not an image');
             }
@@ -94,10 +88,16 @@ export class FirestorageService {
   
         Promise.all(uploadPromises)
           .then(results => {
+            console.log('results: ', results);
+            
             const flattenedResults = results.reduce((acc, curr) => acc.concat(curr), []); // Flatten the nested array of results
             console.log(flattenedResults);
             
-            resolve(flattenedResults);
+            const uploadObj = {
+              firebaseImageId : imageId,
+              images: flattenedResults
+            }
+            resolve(uploadObj);
           })
           .catch(error => {
             console.error(error);
