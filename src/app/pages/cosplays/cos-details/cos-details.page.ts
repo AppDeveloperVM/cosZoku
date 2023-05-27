@@ -5,7 +5,7 @@ import { ActivatedRoute, Route, Router } from '@angular/router';
 import { LoadingController, NavController } from '@ionic/angular';
 import { log } from 'console';
 import { deleteObject, getDownloadURL, getStorage, ref } from 'firebase/storage';
-import { BehaviorSubject, Observable, Subscription, concatMap, finalize, from, map, mergeMap, of, switchMap, tap, toArray } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription, concatMap, finalize, from, map, mergeMap, of, switchMap, tap, toArray } from 'rxjs';
 import { Cosplay } from 'src/app/models/cosplay.interface';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { CosplayService } from 'src/app/services/cosplay/cosplay.service';
@@ -23,8 +23,6 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   cosplay: Cosplay;
   cosplayId: string;
   cosplaySub: Subscription;
-  galleryItems: any = [];
-  galleryImgs: Observable<any[]>;
   loadingGallery: boolean = false;
   showLoading: boolean = false;
   detailsForm: FormGroup;
@@ -47,7 +45,11 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   defaultImg = 'https://ionicframework.com/docs/img/demos/thumbnail.svg';
   oldImgName = "";
   imageName = "";
-  imgSrc$: Observable<string>;
+  profileImg: Subject<string> = new Subject<string>;
+  profileImg$: Observable<string> = this.profileImg.asObservable();
+
+  galleryImgs: Subject<string[]> = new Subject<string[]>;
+  galleryImgs$: Observable<any[]>;
 
   actualMapImage = "";
   uploadPercent: Observable<number>;
@@ -152,7 +154,10 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       this.oldImgName = this.cosplay.imageUrl;
       const extraPath = `cosplays/${this.cosplay.id}/main_photo/`;
       const imageUrl = await this.getImageByFbUrl(this.imageName, 360, extraPath);
-      this.imgSrc$ = imageUrl;
+      this.profileImg$ = imageUrl;
+      this.profileImg$.subscribe((img) => {
+        this.profileImg.next(img);
+      });
     }
   }
 
@@ -160,7 +165,11 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     try {
       this.loadingGallery = true;
       this.showLoading = true;
-      this.galleryImgs = await this.galleryService.getPhotos('cosplays', this.cosplay.id);
+
+      this.galleryImgs$ = await this.galleryService.getPhotos('cosplays', this.cosplay.id);
+      this.galleryImgs$.subscribe((gallery)=> {
+        this.galleryImgs.next(gallery);
+      })
 
       this.loadingGallery = false;
       this.showLoading = false;
@@ -202,13 +211,15 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       this.isFormReady = false;
       this.showLoading = true;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
-      const imgSizes = [isMainPhoto ? '' : '320']
+      const imgSizes = [isMainPhoto ? null : '320']
 
       await this.firestorageService.fullUploadProcess(imageData, this.detailsForm, this.userId, extraPath, imgSizes)
-      .then(async (val) => {
-        if (val) {
-          const img = val[0];
-          console.log('val:', val);
+      .then(async (fullUploadReponse) => {
+        if (fullUploadReponse) {
+          console.log('val:', fullUploadReponse);
+          const img = fullUploadReponse.images[0];
+          const firebaseId = fullUploadReponse.firebaseId;
+          
           const name = img.split('_')[0];
           const size = img.split('_')[1];
           this.imageName = name;
@@ -261,12 +272,14 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   updateMainPhotoPreview() {
     console.log('updateMainPhotoPreview');
     
-    
     this.getImageByFbUrl(this.imageName, 2, this.imgsPath)
     .then((res) => {
       console.log('res:', res);
 
-      this.imgSrc$ = res;
+      this.profileImg$ = res;
+      this.profileImg$.subscribe((img) => {
+        this.profileImg.next(img);
+      });
       this.imageChanged = true;
       this.detailsForm.patchValue({ imageUrl: res }); // img updated in form
       console.log('update main photo SUCCESS');
@@ -283,7 +296,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       () => {
         console.log('Photo deleted successfully');
         // Perform any subsequent actions after successful deletion
-        this.galleryImgs = this.galleryService.getPhotos('cosplays', this.cosplay.id)
+        this.loadGalleryImgs();
       },
       (error) => {
         console.error('Failed to delete photo:', error);

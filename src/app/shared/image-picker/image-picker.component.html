@@ -5,7 +5,7 @@
     >Select image
   </ion-button>
 
-  <ng-container *ngIf="!simplePicker && !myImage == null">
+  <ng-container *ngIf="!simplePicker">
     <image-cropper
     id="cropper"
     *ngIf="selectedImage | async as SelectedImage"
@@ -21,7 +21,7 @@
     (imageCropped)="imageCropped($event)"
     (loadImageFailed)="loadImageFailed()"
     (imageLoaded)="imageLoaded()">
-  </image-cropper>
+    </image-cropper>
   </ng-container>
   
  

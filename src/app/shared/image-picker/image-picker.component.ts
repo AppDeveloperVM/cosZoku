@@ -26,9 +26,9 @@ export class ImagePickerComponent implements OnInit {
   @Input() enabledCropper = false;
   @Input() simplePicker = false;
   imageReady = false;
-  usePicker = false;
   isMobile = Capacitor.getPlatform() !== 'web';
   isLoading = false;
+  imagePicked: boolean = false;
 
   originalImage: any = null;
   myImage: any = null;
@@ -38,9 +38,8 @@ export class ImagePickerComponent implements OnInit {
     private alertCtrl: AlertController, private toastCtrl: ToastController) { }
 
   ngOnInit() {  
-     if ((this.platform.is('mobile') && !this.platform.is('hybrid')) ||
-     this.platform.is('desktop') ) {
-      this.usePicker = true;
+     if ((this.platform.is('mobile') && !this.platform.is('hybrid')) || this.platform.is('desktop') ) {
+      this.simplePicker = true;
     } 
   }
 
@@ -48,10 +47,8 @@ export class ImagePickerComponent implements OnInit {
     if(this.selectedImage){
       this.selectedImage.subscribe(image => {
         if (image) {
-          // Do something when the selectedImage has a value
           console.log('Image exists:', image);
         } else {
-          // Do something when the selectedImage is empty
           console.log('Image is empty');
         }
       })
@@ -68,22 +65,19 @@ export class ImagePickerComponent implements OnInit {
       resultType: CameraResultType.Base64,
     }).then( async (image) => {
       this.myImage = `data:image/jpeg;base64,${image.base64String}`;
-
+      this.imagePicked = true;
       if( !this.simplePicker ){
         this.selectedImage.subscribe((img)=> {
           this.originalImage = img;
-          //this.selectedImage.next(m);
-        })
-        
-        
-        //this.isLoading = true;        
+        })     
       } else {
-        //this.selectedImage = this.myImage;
         this.imagePick.emit(this.myImage)
       }
       
     })
-    .catch( (err) => { })
+    .catch( (err) => {
+      this.imagePicked= false;
+    })
   
   }
 

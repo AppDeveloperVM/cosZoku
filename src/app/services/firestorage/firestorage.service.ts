@@ -54,7 +54,7 @@ export class FirestorageService {
     return extraPath;
   }
 
-  async fullUploadProcess(imageData: string | File, form: FormGroup, userId: string = '', extraPath: string = '', imgSizes: any = this.imgSizes): Promise<any> {
+  async fullUploadProcess(imageData: string | File, form: FormGroup, userId: string = '', extraPath: string = '', customSizes: any = this.imgSizes): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
         console.log('imageData: ',imageData);
@@ -69,13 +69,19 @@ export class FirestorageService {
         
         
         const imageId = Math.random().toString(36).substring(2);
-        imgSizes = imgSizes !== '' ? imgSizes : this.imgSizes;
+        const sizes = customSizes[0]!== null ? customSizes : this.imgSizes;
   
-        const uploadPromises = imgSizes.map(async (imgSize, i) => {
+        const uploadPromises = sizes.map(async (imgSize, i) => {
           try {
-            form.patchValue({ imageUrl: imageId });
+            //form.patchValue({ imageUrl: imageId });
             if (val.type.startsWith('image/')) {
               const compressedImg = await this.compressFile(val, imgSize, i);
+
+              // const updatedObject = {
+              //   firebaseId: imageId,
+              //   images: uploadResponse,
+              // };
+              
               return this.uploadToServer(compressedImg, imageId + "_" + imgSize, form, i, userId, extraPath);
             } else {
               throw new Error('The file given is not an image');
@@ -90,6 +96,7 @@ export class FirestorageService {
           .then(results => {
             const flattenedResults = results.reduce((acc, curr) => acc.concat(curr), []); // Flatten the nested array of results
             console.log(flattenedResults);
+            
             resolve(flattenedResults);
           })
           .catch(error => {

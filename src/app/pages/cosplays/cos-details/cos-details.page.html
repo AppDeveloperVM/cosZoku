@@ -43,8 +43,8 @@
             <form [formGroup]="detailsForm" >
               <ion-thumbnail class="thumbnail" >
                 <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
-                <ng-container *ngIf="imgSrc$ | async as imgSrc else defaultTemplate">
-                  <img [src]="imgSrc" />
+                <ng-container *ngIf="profileImg$ | async as profileImg else defaultTemplate">
+                  <img [src]="profileImg" />
                 </ng-container>
                 <ng-template #defaultTemplate>
                   <img alt="Silhouette of mountains" [src]="defaultImg" />
@@ -52,9 +52,9 @@
               </ion-thumbnail>
     
               <ion-list class="ion-no-padding mt-2" >
-                <ion-item *ngIf="isProfileEditEnabled" [ngClass]="{'notclickable no-border': !isProfileEditEnabled }" class="mb-2" fill="outline">
+                <ion-item *ngIf="isProfileEditEnabled" lines="none" [ngClass]="{'notclickable no-border': !isProfileEditEnabled }" class="mb-2" fill="outline">
                   <app-image-picker
-                  [selectedImage]="imgSrc$"
+                  [selectedImage]="profileImg$"
                   [showPreview]="detailsForm.get('imageUrl').value"
                   [aspectRatio]="1 / 1"
                   [simplePicker]="false"
@@ -234,8 +234,8 @@
             <div class="gallery_header">
               <ion-thumbnail class="thumbnail" >
                 <ion-progress-bar type="indeterminate" *ngIf="!imageReady"></ion-progress-bar>
-                <ng-container *ngIf="imgSrc$ | async as imgSrc else defaultTemplate">
-                  <img [src]="imgSrc" />
+                <ng-container *ngIf="profileImg$ | async as profileImg else defaultTemplate">
+                  <img [src]="profileImg" />
                 </ng-container>
                 <ng-template #defaultTemplate>
                   <img alt="Silhouette of mountains" [src]="defaultImg" />
@@ -258,7 +258,7 @@
                   </ion-button>
 
                   <app-image-picker
-                  [selectedImage]="imgSrc$"
+                  [selectedImage]="profileImg$"
                   [showPreview]="detailsForm.get('imageUrl').value"
                   [aspectRatio]="1 / 1"
                   [simplePicker]="true"
