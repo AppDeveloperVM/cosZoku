@@ -258,7 +258,6 @@
                   </ion-button>
 
                   <app-image-picker
-                  [selectedImage]="profileImg$"
                   [showPreview]="detailsForm.get('imageUrl').value"
                   [aspectRatio]="1 / 1"
                   [simplePicker]="true"
@@ -269,7 +268,7 @@
               <div id="gallery_photos" *ngIf="!loadingGallery">
                 <ion-grid>
                   <ion-row>
-                    <ion-col size="3" *ngFor="let photo of (galleryImgs | async) as photos">
+                    <ion-col size="3" *ngFor="let photo of (galleryImgs$ | async) as photos">
                       <div class="photo">
                         <ion-button *ngIf="isGalleryEditEnabled" (click)="deletePhoto(photo)" class="delete_button" color="danger">
                           <ion-icon slot="icon-only" name="create-outline" ></ion-icon>
