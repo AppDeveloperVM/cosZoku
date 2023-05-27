@@ -40,7 +40,7 @@ export class FirestorageService {
   imgReference;
   public URLPublica = '';
   isFormReady = false;
-  uploadPercent: Observable<number>;
+  uploadPercent$: Observable<number>;
   ImageObs: Observable<string>;
   urlImage: String;
 
@@ -57,12 +57,10 @@ export class FirestorageService {
   async fullUploadProcess(imageData: string | File, form: FormGroup, userId: string = '', extraPath: string = '', customSizes: any = this.imgSizes): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log('imageData: ',imageData);
         
         let val: File;
         if (typeof imageData === 'string') {
           val = await this.decodeFile(imageData);
-          console.log('val decoded: ', val);
         } else {
           val = imageData;
         }
@@ -87,12 +85,8 @@ export class FirestorageService {
         });
   
         Promise.all(uploadPromises)
-          .then(results => {
-            console.log('results: ', results);
-            
+          .then(results => {            
             const flattenedResults = results.reduce((acc, curr) => acc.concat(curr), []); // Flatten the nested array of results
-            console.log(flattenedResults);
-            
             const uploadObj = {
               firebaseImageId : imageId,
               images: flattenedResults
@@ -162,7 +156,7 @@ export class FirestorageService {
 
   async compressFile(imageFile : File,maxWidth = 1920, index : Number = null) : Promise<any> {
     if (imageFile.type.startsWith('image/')) {
-      console.log(`Original file size: ${imageFile.size / 1024 / 1024} MB`);
+      //console.log(`Original file size: ${imageFile.size / 1024 / 1024} MB`);
 
       const options = {
         maxSizeMB: 1,
@@ -172,7 +166,7 @@ export class FirestorageService {
     
       try {
         const compressedFile = await imageCompression(imageFile, options);
-        console.log(`Compressed file ${index}, size: ${compressedFile.size / 1024 / 1024} MB`);
+        //TODO accurate MB size console.log(`Compressed file ${index}, size: ${compressedFile.size / 1024 / 1024} MB`);
         return compressedFile;
       } catch (error) {
         throw new Error(`CompressProcess error with file ${index}: ${error}`);
@@ -186,22 +180,23 @@ export class FirestorageService {
 
     var promise = new Promise((resolve, reject) => {
     
-      //UPLOAD IMAGE
-      console.log(userId + '/' + extraPath);
-      
+      //UPLOAD IMAGE      
       const file = imageFile;
       const filePath = `images/${ (userId!='' ? userId : '') + '/' +( extraPath!= '' ? extraPath : '' ) + imageId}`;// Image path + fileName  ||  can add profile_${id}
       const ref = this.storage.ref(filePath);
       const task = this.storage.upload(filePath, file);
       var imageUrl = "";
-      this.uploadPercent = task.percentageChanges();
+      this.uploadPercent$ = task.percentageChanges();
+      
       task.snapshotChanges().pipe( 
         finalize(() => {
           resolve(imageId)
         })
       ).subscribe(
         //percentage Changes..
-        value => {console.log("Upload "+index+". Transferred: "+value.bytesTransferred + " of total :"+ value.totalBytes)},
+        value => { 
+         // TODO PERCENTAGE console.log("Upload "+index+". Transferred: "+value.bytesTransferred + " of total :"+ value.totalBytes)
+        },
         error => { 
           console.log('Error with img '+index+':'+ error); 
           reject("Error.") 
@@ -211,8 +206,8 @@ export class FirestorageService {
       );
 
 
-    });//finishes promise
-      return promise;
+    });
+    return promise;
   }
 
   async getStorageImgUrl(fileName: string, size: number, userId: string = '', extraPath: string = ''): Promise<Observable<string>> {
@@ -234,11 +229,9 @@ export class FirestorageService {
       default:
         suffix = this.imgSizes[0];
     }
+
     file = fileName + "_" + suffix;
-  
-    const filePath = `images/${(userId !== '' ? userId + '/' : '') + extraPath + file}`;
-    console.log(`filePath: ${filePath}`);
-    
+    const filePath = `images/${(userId !== '' ? userId + '/' : '') + extraPath + file}`;    
     const storageRef = this.storage.ref(filePath);
   
     try {

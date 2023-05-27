@@ -21,7 +21,6 @@
     <div class="main-card col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-12">
       
       <div *ngIf="isCosplayLoading || showLoading">
-        <ion-progress-bar type="indeterminate"></ion-progress-bar>
       </div>
 
       <div *ngIf="!isCosplayLoading">
@@ -265,10 +264,10 @@
                 </div>
               </div>
               
-              <div id="gallery_photos" *ngIf="!loadingGallery">
+              <div id="gallery_photos">
                 <ion-grid>
                   <ion-row>
-                    <ion-col size="3" *ngFor="let photo of (galleryImgs$ | async) as photos">
+                    <ion-col size="3" *ngFor="let photo of (galleryImgs$ | async) as photos; trackBy: trackByFn">
                       <div class="photo">
                         <ion-button *ngIf="isGalleryEditEnabled" (click)="deletePhoto(photo)" class="delete_button" color="danger">
                           <ion-icon slot="icon-only" name="create-outline" ></ion-icon>
@@ -279,9 +278,7 @@
                   </ion-row>
                 </ion-grid>
               </div>
-              <ng-template *ngIf="loadingGallery">
-                <ion-progress-bar type="indeterminate"></ion-progress-bar>
-              </ng-template>
+              
             </div>
 
           </div>

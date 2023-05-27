@@ -69,7 +69,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute, private router: Router, private navCtrl: NavController,
     private authService: AuthService, private cosService: CosplayService,private galleryService: GalleryService, 
-    private firestorageService: FirestorageService, private loadingCtrl : LoadingController,
+    public firestorageService: FirestorageService, private loadingCtrl : LoadingController,
     private afs: AngularFireStorage,
     private cdr: ChangeDetectorRef
   ) { }
@@ -165,7 +165,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
   async loadGalleryImgs() {
     try {
-      this.loadingGallery = true;
+      //this.loadingGallery = true;
       this.showLoading = true;
 
       this.galleryImgs$ = await this.galleryService.getPhotos('cosplays', this.cosplay.id);
@@ -173,22 +173,13 @@ export class CosDetailsPage implements OnInit, OnDestroy {
         this.galleryImgs.next(gallery);
       })
 
-      this.loadingGallery = false;
+      //this.loadingGallery = false;
       this.showLoading = false;
     } catch (error) {
       // Handle the error
       console.error('An error occurred:', error);
     }
   }
-
-  // async getGalleryImg(reference: string ) {
-  //   const ref = reference + '';
-  //   const imgName = ref.split('_')[0];
-  //   const imgSize = ref.split('_')[1];
-  //   const extraPath = `cosplays/${this.cosplay.id}/gallery/`;
-  //   const path = await this.getImageByFbUrl(imgName, Number(imgSize), extraPath );
-  //   return { imgName, path, imgSize };
-  // }
 
   async getImageByFbUrl(imageName: string, size: number, extraPath: string = '') {
     if (imageName) {
@@ -245,6 +236,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       })
       .finally(() => {
         this.loadGalleryImgs();
+        //TODO update gallery subject and obseervable
       });
 
     }catch(err){
@@ -310,7 +302,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       () => {
         console.log('Photo deleted successfully');
         // Perform any subsequent actions after successful deletion
-        this.loadGalleryImgs();
+        //this.loadGalleryImgs();
       },
       (error) => {
         console.error('Failed to delete photo:', error);
