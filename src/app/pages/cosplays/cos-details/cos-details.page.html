@@ -57,6 +57,7 @@
                   [showPreview]="detailsForm.get('imageUrl').value"
                   [aspectRatio]="1 / 1"
                   [simplePicker]="false"
+                  (editEnabled)="onEditImg()"
                   (imagePick)="onImagePicked($event, true)">
                 </app-image-picker>
                 </ion-item>

@@ -5,12 +5,12 @@
     >Select image
   </ion-button>
 
-  <ng-container *ngIf="!simplePicker">
+  <ng-container *ngIf="!simplePicker && myImage">
     <image-cropper
     id="cropper"
-    *ngIf="selectedImage | async as SelectedImage"
+    *ngIf="editingImg"
     #cropper
-    [imageBase64]="SelectedImage"
+    [imageBase64]="myImage"
     [maintainAspectRatio]="true"
     [aspectRatio]="aspectRatio"
     format="jpeg"
@@ -25,11 +25,11 @@
   </ng-container>
   
  
-  <img [src]="selectedImage | async" *ngIf="!simplePicker" />
+  <img [src]="myImage" *ngIf="!simplePicker && !editingImg && myImage" />
 
 </div>
 
-<ng-container *ngIf="!simplePicker"> 
+<ng-container *ngIf="!simplePicker && myImage"> 
   <ion-row *ngIf="selectedImage | async">
     <ion-progress-bar type="indeterminate" *ngIf="isLoading"></ion-progress-bar>
     <ion-col size="3" class="ion-text-center">

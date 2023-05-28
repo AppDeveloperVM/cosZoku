@@ -206,6 +206,10 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     }
   }
 
+  async onEditImg(){
+    
+  }
+
   async onImagePicked(imageData: string | File, isMainPhoto: boolean = false) {
     try {
       console.log('isMainPhoto:' , isMainPhoto);
