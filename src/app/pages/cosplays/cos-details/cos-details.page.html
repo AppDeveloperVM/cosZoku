@@ -258,6 +258,7 @@
 
                   <app-image-picker
                   [showPreview]="detailsForm.get('imageUrl').value"
+                  [editModeEnabled]="isProfileEditEnabled || isGalleryEditEnabled"
                   [aspectRatio]="1 / 1"
                   [simplePicker]="true"
                   (imagePick)="onImagePicked($event, false)"></app-image-picker>

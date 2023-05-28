@@ -213,7 +213,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       this.isFormReady = false;
       this.showLoading = true;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
-      const imgSizes = [isMainPhoto ? '320' : null]
+      const imgSizes = [null]//isMainPhoto ? '320' :
 
       await this.firestorageService.fullUploadProcess(imageData, this.detailsForm, this.userId, extraPath, imgSizes)
       .then(async (fullUploadReponse) => {
@@ -259,6 +259,9 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   updateMainPhotoPreview() {
     console.log('updateMainPhotoPreview');
     
+    const extraPath = `cosplays/${this.cosplay.id}/main_photo/`;
+    this.thumbnailPath = extraPath;
+
     this.getImageByFbUrl(this.imageName, 2, this.thumbnailPath)
     .then((res) => {
      

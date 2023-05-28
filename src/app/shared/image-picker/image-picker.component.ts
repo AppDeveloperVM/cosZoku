@@ -20,6 +20,7 @@ export class ImagePickerComponent implements OnInit {
   @ViewChild('cropper') cropper: ImageCropperComponent;
   @Output() imagePick = new EventEmitter<string | File>();
   @Input() showPreview = false;
+  @Input() editModeEnabled: boolean = false;
   @Input() selectedImage : Observable<string>;
   @Input() roundCropper = false;
   @Input() aspectRatio = 4 / 3;

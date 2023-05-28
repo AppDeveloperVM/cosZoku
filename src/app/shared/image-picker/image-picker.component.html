@@ -1,6 +1,6 @@
 <div class="picker">
   <ion-button (click)="selectImage()" 
-  *ngIf="!myImage"
+  [disabled]="editModeEnabled"
   expand="full" color="primary" id="btn_overlay"
     >Select image
   </ion-button>
