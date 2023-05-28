@@ -18,8 +18,8 @@ import { GalleryService } from 'src/app/services/gallery/gallery.service';
   styleUrls: ['./cos-details.page.scss'],
 })
 export class CosDetailsPage implements OnInit, OnDestroy {
-  user$ = this.authService.currentUser$;
   private userId = this.authService.userUid;
+  user$ = this.authService.currentUser$;
   cosplay: Cosplay;
   cosplayId: string;
   cosplaySub: Subscription;
@@ -64,7 +64,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
 
   devSegment = 'toMake';
   sectionActive = 'gallery';
-  imgsPath = '';
+  thumbnailPath = '';
 
   constructor(
     private route: ActivatedRoute, private router: Router, private navCtrl: NavController,
@@ -93,9 +93,11 @@ export class CosDetailsPage implements OnInit, OnDestroy {
               if(cosplay != null){
                 this.cosplay = cosplay.data();
                 this.initForm();
-                this.imgsPath = `cosplays/${ this.cosplay.id + '/' + 'main_photo/'}`
-                this.assignImage();
-                this.loadGalleryImgs(); // works
+
+                
+                this.assignMainThumbnail(this.cosplay.id);
+
+                this.loadGalleryImgs();
                 this.isCosplayLoading = false;
               } else {
                 console.log("Error loading item - not found");
@@ -146,14 +148,17 @@ export class CosDetailsPage implements OnInit, OnDestroy {
   }
 
 
-  async assignImage(){
+  async assignMainThumbnail(id: string){
     if (this.cosplay.imageUrl){
       console.log('assign img');
     
       this.imageName = this.cosplay.imageUrl;
       this.oldImgName = this.cosplay.imageUrl;
-      const extraPath = `cosplays/${this.cosplay.id}/main_photo/`;
+      const extraPath = `cosplays/${id}/main_photo/`;
+      this.thumbnailPath = extraPath;
       const imageUrl = await this.getImageByFbUrl(this.imageName, 360, extraPath);
+      console.log('imageUrl: ', imageUrl);
+      
       if(imageUrl) {
         this.profileImg$ = imageUrl;
         this.profileImg$.subscribe((img) => {
@@ -168,8 +173,12 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       //this.loadingGallery = true;
       this.showLoading = true;
 
+      const galleryImgSize = '320';
       this.galleryImgs$ = await this.galleryService.getPhotos('cosplays', this.cosplay.id);
       this.galleryImgs$.subscribe((gallery)=> {
+        console.log('gallery: ',gallery);
+        
+        //const imageUrl = await this.getImageByFbUrl(this.imageName, 360, extraPath);
         this.galleryImgs.next(gallery);
       })
 
@@ -204,7 +213,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       this.isFormReady = false;
       this.showLoading = true;
       var extraPath = this.firestorageService.getCosplayPath(this.cosplay.id, isMainPhoto);
-      const imgSizes = [isMainPhoto ? null : '320']
+      const imgSizes = [isMainPhoto ? '320' : null]
 
       await this.firestorageService.fullUploadProcess(imageData, this.detailsForm, this.userId, extraPath, imgSizes)
       .then(async (fullUploadReponse) => {
@@ -245,30 +254,12 @@ export class CosDetailsPage implements OnInit, OnDestroy {
     }
 
   } 
-
-  getImageUrlsObservable(imageName: string, path: string): Observable<string[]> {
-    const storagePath = `images/${path}/${imageName}`;
-  
-    // Create a reference to the image file
-    const storageRef = ref(getStorage(), storagePath);
-  
-    // Get the download URL of the image
-    const downloadUrl$ = from(getDownloadURL(storageRef));
-  
-    return downloadUrl$.pipe(
-      switchMap(url => {
-        // Create an array with the image URL
-        const imageUrlArray = [url];
-        return of(imageUrlArray);
-      })
-    );
-  }
   
 
   updateMainPhotoPreview() {
     console.log('updateMainPhotoPreview');
     
-    this.getImageByFbUrl(this.imageName, 2, this.imgsPath)
+    this.getImageByFbUrl(this.imageName, 2, this.thumbnailPath)
     .then((res) => {
      
 
@@ -302,7 +293,7 @@ export class CosDetailsPage implements OnInit, OnDestroy {
       () => {
         console.log('Photo deleted successfully');
         // Perform any subsequent actions after successful deletion
-        //this.loadGalleryImgs();
+        this.loadGalleryImgs();
       },
       (error) => {
         console.error('Failed to delete photo:', error);

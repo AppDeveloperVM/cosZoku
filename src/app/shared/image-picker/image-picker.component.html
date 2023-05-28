@@ -1,6 +1,6 @@
 <div class="picker">
   <ion-button (click)="selectImage()" 
-  *ngIf="!myImage || simplePicker"
+  *ngIf="!myImage"
   expand="full" color="primary" id="btn_overlay"
     >Select image
   </ion-button>
@@ -25,7 +25,7 @@
   </ng-container>
   
  
-  <img [src]="selectedImage | async" *ngIf="!simplePicker && myImage == null" />
+  <img [src]="selectedImage | async" *ngIf="!simplePicker" />
 
 </div>
 

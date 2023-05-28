@@ -7,6 +7,7 @@ import { ProfileUser } from 'src/app/models/user-profile';
 import { AuthService } from '../auth/auth.service';
 import { UserService } from '../user/user.service';
 import { Observable, forkJoin, from, map, mergeMap } from 'rxjs';
+import { log } from 'console';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class GalleryService {
   private cosplaysCollection : AngularFirestoreCollection<Cosplay>;
   private usersCollection : AngularFirestoreCollection<any>;
   private userId;
+  private imgSizes : any = [140,320,640];
 
   constructor( private readonly afs : AngularFirestore, private authService: AuthService, private userService: UserService ) {
     this.authService.currentUser$.subscribe((user)=> {
@@ -37,38 +39,59 @@ export class GalleryService {
     return from(listAll(listRef)).pipe(
       mergeMap((res) => {
         const downloadURLObservables = res.items.map(async (itemRef) => {
-          const imgName = itemRef.name.split('_')[0];
-          const size = '320'; // Assuming you want to use the size '320'
-
-          const imgRef = ref(getStorage(), `images/${this.userId}/${collectionType}/${collectionId}/gallery/${imgName}_${size}`);
-          const downloadURL = await getDownloadURL(imgRef);
-          return downloadURL;
+          
+          const imgName = itemRef.name;//.split('_')[0]
+          const size = '320';
+          if (imgName.endsWith(size)) {
+            const imgRef = ref(getStorage(), `images/${this.userId}/${collectionType}/${collectionId}/gallery/${imgName}`);
+            const downloadURL = await getDownloadURL(imgRef);
+            return downloadURL;
+          } else {
+            return null;
+          }
         });
 
-        return forkJoin(downloadURLObservables);
+        return forkJoin(downloadURLObservables).pipe(
+          map((downloadURLs) => downloadURLs.filter((url) => url !== null))
+        );
       })
     );
   }
 
-  deletePhoto(url: string): Observable<void> {
+  deletePhoto(url: string): Observable<any[]> {
+    const storage = getStorage();
+    const deletePromises = [];
+
     // Parse the URL and extract the path of the image file
-  const urlParts = url.split('?')[0].split('/');
-  const filePath = decodeURIComponent(urlParts[urlParts.length - 1]);
+    const urlParts = url.split('?')[0].split('/');
+    const filePath = decodeURIComponent(urlParts[urlParts.length - 1]).toString();
 
-  // Create a reference to the image file
-  const imgRef = ref(getStorage(), filePath);
+    console.log(filePath);
+    
+    const pathRegex = /images\/([^%]+)(\/[^%]+)*\/gallery\/([^?]+)/;
+    const matches = filePath.match(pathRegex);
+    console.log('matches: ', matches);
+    
 
-  // Delete the image file
-  return new Observable<void>((observer) => {
-    deleteObject(imgRef)
-      .then(() => {
-        observer.next(); // Emit a value to indicate successful deletion
-        observer.complete(); // Complete the observable
-      })
-      .catch((error) => {
-        observer.error(error); // Emit an error if deletion fails
-      });
-  });
+    const userId = matches[1];
+    const subfolders = matches[2] ? matches[2].split('/').slice(1) : []; // Extract subfolders, if any
+    const imageName = matches[3].split('_')[0];
+  
+    const subfolderPath = subfolders.join('/');
+    const imagePath = `images/${userId}/${subfolderPath}/gallery/`;
+    console.log("Image Path:", imagePath);
+   
+ 
+    for (const imgSize of this.imgSizes) {
+      console.log('imgSize:',imgSize);
+      
+      const imgRef = ref(storage, `${imagePath}${imageName}_${imgSize}`);
+  
+      const deletePromise = deleteObject(imgRef);
+      deletePromises.push(deletePromise);
+    }
+
+    return from(Promise.all(deletePromises));
  }
   
 }

@@ -67,11 +67,12 @@ export class ImagePickerComponent implements OnInit {
       this.myImage = `data:image/jpeg;base64,${image.base64String}`;
       this.imagePicked = true;
       if( !this.simplePicker ){
-        this.selectedImage.subscribe((img)=> {
-          this.originalImage = img;
-        })     
+        // this.selectedImage.subscribe((img)=> {
+        //   this.originalImage = img;
+        // })  
+        this.imagePick.emit(this.myImage);   
       } else {
-        this.imagePick.emit(this.myImage)
+        this.imagePick.emit(this.myImage);
       }
       
     })

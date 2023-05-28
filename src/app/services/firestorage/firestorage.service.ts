@@ -68,6 +68,8 @@ export class FirestorageService {
         
         const imageId = Math.random().toString(36).substring(2);
         const sizes = customSizes[0]!== null ? customSizes : this.imgSizes;
+        console.log('sizes: ', sizes);
+        
   
         const uploadPromises = sizes.map(async (imgSize, i) => {
           try {
@@ -85,7 +87,9 @@ export class FirestorageService {
         });
   
         Promise.all(uploadPromises)
-          .then(results => {            
+          .then(results => {     
+            console.log('promises get imgs results: ',results);
+                   
             const flattenedResults = results.reduce((acc, curr) => acc.concat(curr), []); // Flatten the nested array of results
             const uploadObj = {
               firebaseImageId : imageId,

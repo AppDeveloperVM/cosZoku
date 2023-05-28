@@ -252,7 +252,7 @@
             <div class="gallery_main">
               <div id="options">
                 <div id="option_buttons">
-                  <ion-button *ngIf="galleryImgs | async" size="medium" color="medium" (click)="enableGalleryEdit()" >
+                  <ion-button *ngIf="galleryImgs$ | async" size="medium" color="medium" (click)="enableGalleryEdit()" >
                     <ion-icon name="create-outline"></ion-icon>
                   </ion-button>
 
