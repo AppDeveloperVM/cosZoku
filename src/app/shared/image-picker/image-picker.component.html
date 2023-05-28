@@ -5,7 +5,7 @@
     >Select image
   </ion-button>
 
-  <ng-container *ngIf="!simplePicker && myImage">
+  <ng-container *ngIf="!simplePicker && myImage && editingImg">
     <image-cropper
     id="cropper"
     *ngIf="editingImg"
@@ -25,11 +25,10 @@
   </ng-container>
   
  
-  <img [src]="myImage" *ngIf="!simplePicker && !editingImg && myImage" />
-
+  <img [src]="croppedImage" *ngIf="!simplePicker && croppedImage && editingImg" />
 </div>
 
-<ng-container *ngIf="!simplePicker && myImage"> 
+<ng-container *ngIf="!simplePicker && myImage && editingImg"> 
   <ion-row *ngIf="selectedImage | async">
     <ion-progress-bar type="indeterminate" *ngIf="isLoading"></ion-progress-bar>
     <ion-col size="3" class="ion-text-center">

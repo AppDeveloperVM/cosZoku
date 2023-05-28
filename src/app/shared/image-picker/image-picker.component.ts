@@ -33,18 +33,18 @@ export class ImagePickerComponent implements OnInit {
   isLoading = false;
   imagePicked: boolean = false;
   editingImg: boolean = false;
+  transform: ImageTransform = {};
 
   originalImage: any = null;
   myImage: any = null;
   croppedImage: any = '';
-  transform: ImageTransform = {};
-
+  
   constructor(private platform: Platform, private loadingCtrl : LoadingController,
     private alertCtrl: AlertController, private toastCtrl: ToastController) { }
 
   ngOnInit() {  
      if ((this.platform.is('mobile') && !this.platform.is('hybrid')) || this.platform.is('desktop') ) {
-      this.simplePicker = false;
+      //this.simplePicker = false;
     } 
   }
 
@@ -74,17 +74,17 @@ export class ImagePickerComponent implements OnInit {
       console.log('image: ',image);
       
       this.myImage = `data:image/jpeg;base64,${image.base64String}`;
+      this.croppedImage = null;
       this.imagePicked = true;
-
       
       this.editEnabled.emit(true);
-      if( this.simplePicker ){
+      if(this.simplePicker ){
         this.imagePick.emit(this.myImage);  
         this.editingImg = false;
       }
     })
     .catch( (err) => {
-      this.imagePicked= false;
+      this.imagePicked = false;
     })
   
   }
@@ -98,8 +98,10 @@ export class ImagePickerComponent implements OnInit {
   // Called when we finished editing (because autoCrop is set to false)
   imageCropped(event: ImageCroppedEvent) {
     this.myImage = event.base64;
+    this.croppedImage = event.base64;
+    this.imagePick.emit(this.croppedImage);
+
     this.editingImg = false;
-    this.imagePick.emit(this.myImage);
     this.imageReady = true;
   }
  
@@ -134,7 +136,8 @@ export class ImagePickerComponent implements OnInit {
           text: 'Discard',
           handler: () => {
             this.myImage = null;
-            this.selectedImage = this.originalImage;
+            this.croppedImage = null;
+            //this.selectedImage = this.originalImage;
           }
         }
       ]
